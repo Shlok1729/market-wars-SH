@@ -1,0 +1,16 @@
+@import "tailwindcss";
+
+@layer utilities {
+  :root {
+    --color-neon-emerald: #10b981;
+  }
+}
+
+.text-neon {
+  text-shadow: 0 0 10px rgba(16, 185, 129, 0.5), 
+               0 0 20px rgba(16, 185, 129, 0.2);
+}
+
+marquee {
+  text-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+}
