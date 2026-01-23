@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { 
-  Users, Megaphone, Zap, Trash2, RefreshCw, Trophy, 
+   Megaphone, Zap, RefreshCw, Trophy, 
   ShieldAlert, Activity, CheckCircle2, XCircle, Play, 
-  TrendingUp, BarChart3, ChevronRight 
+   BarChart3, 
 } from 'lucide-react';
 
 export const Admin = ({ onBack }: { onBack: () => void }) => {
   const [teams, setTeams] = useState<any[]>([]);
-  const [news, setNews] = useState<any[]>([]);
+  const [ news, setNews] = useState<any[]>([]);
   const [market, setMarket] = useState<any>(null);
   const [loading, setLoading] = useState(false);
 
