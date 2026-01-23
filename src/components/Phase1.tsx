@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabaseClient';
 import toast from 'react-hot-toast';
 import { 
   TrendingUp, TrendingDown, Library, Pizza, Dumbbell, 
-  Rocket, Wallet, Activity, Award, Plus, Minus, Zap 
+  Rocket, Wallet, Award, Plus, Minus, Zap 
 } from 'lucide-react';
 
 interface Phase1Props {
