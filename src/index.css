@@ -14,3 +14,20 @@
 marquee {
   text-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
 }
+@keyframes enter {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes leave {
+  from { transform: translateX(0); opacity: 1; }
+  to { transform: translateX(100%); opacity: 0; }
+}
+
+.animate-enter {
+  animation: enter 0.3s ease-out;
+}
+
+.animate-leave {
+  animation: leave 0.3s ease-in forwards;
+}

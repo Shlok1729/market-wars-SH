@@ -38,30 +38,30 @@ export const Phase1Results = ({ team }: { team: any }) => {
         
         {/* SECTION 1: SCARCITY REVEAL */}
         <section>
-          <h1 className="text-2xl font-black text-white mb-6 flex items-center gap-2">
+          <h1 className="flex items-center gap-2 mb-6 text-2xl font-black text-white">
             <TrendingUp className="text-emerald-500" /> MARKET_RESOLUTION_PHASE_01
           </h1>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
             {stats.map(s => (
-              <div key={s.id} className="bg-zinc-900/50 border border-zinc-800 p-4 rounded text-center">
-                <p className="text-[10px] text-zinc-500 uppercase">{s.id}</p>
+              <div key={s.id} className="p-4 text-center border rounded bg-zinc-900/50 border-zinc-800">
+                <p className="text-[10px] text-zinc-300">{s.id}</p>
                 <p className="text-xl font-bold text-white">${s.value}</p>
-                <p className="text-[9px] text-zinc-600 mt-1">{s.shares} TOTAL SHARES</p>
+                <p className="text-[12px] text-zinc-300 mt-1">{s.shares} TOTAL SHARES</p>
               </div>
             ))}
           </div>
         </section>
 
         {/* SECTION 2: LEADERBOARD */}
-        <section className="bg-zinc-950 border border-emerald-500/20 rounded-lg overflow-hidden">
-          <div className="bg-emerald-500/10 p-4 border-b border-emerald-500/20 flex justify-between">
-            <h2 className="text-emerald-500 font-bold flex items-center gap-2">
+        <section className="overflow-hidden border rounded-lg bg-zinc-950 border-emerald-500/20">
+          <div className="flex justify-between p-4 border-b bg-emerald-500/10 border-emerald-500/20">
+            <h2 className="flex items-center gap-2 font-bold text-emerald-500">
               <Trophy size={18} /> GLOBAL_LEADERBOARD
             </h2>
-            <span className="text-white font-bold">YOUR RANK: #{leaderboard.findIndex(t => t.team_name === team.team_name) + 1}</span>
+            <span className="font-bold text-white">YOUR RANK: #{leaderboard.findIndex(t => t.team_name === team.team_name) + 1}</span>
           </div>
           <table className="w-full text-left">
-            <thead className="text-[10px] text-zinc-600 border-b border-zinc-900">
+            <thead className="text-[10px] text-white border-b border-zinc-900">
               <tr>
                 <th className="p-4">RANK</th>
                 <th className="p-4">TEAM_NAME</th>
@@ -73,7 +73,7 @@ export const Phase1Results = ({ team }: { team: any }) => {
                 <tr key={idx} className={`border-b border-zinc-900/50 ${t.team_name === team.team_name ? 'bg-emerald-500/5' : ''}`}>
                   <td className="p-4 text-zinc-500">#{idx + 1}</td>
                   <td className="p-4 font-bold text-white uppercase">{t.team_name}</td>
-                  <td className="p-4 text-right font-mono text-emerald-400 font-bold">
+                  <td className="p-4 font-mono font-bold text-right text-emerald-400">
   ${Number(t.balance).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
 </td>
                 </tr>
