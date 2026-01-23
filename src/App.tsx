@@ -6,7 +6,7 @@ import { Phase1 } from './components/Phase1'
 import { Phase1Results } from './components/Phase1Results'
 import { Phase2 } from './components/Phase2'
 import { Admin } from './components/Admin'
-import { LogOut, Shield } from 'lucide-react'
+import { LogOut,} from 'lucide-react'
 import { Toaster } from 'react-hot-toast'
 
 function App() {
