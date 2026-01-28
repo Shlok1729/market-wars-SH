@@ -88,7 +88,7 @@ export const Phase1: React.FC<Phase1Props> = ({ team, setTeam }) => {
     // 1. Validation
     if (!qty || qty <= 0) return alert("ENTER A VALID QUANTITY");
     
-    const price = 1; 
+    const price = 10; 
     const totalCost = qty * price;
 
     if (side === 'buy' && team.balance < totalCost) {

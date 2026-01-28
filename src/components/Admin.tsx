@@ -3,7 +3,9 @@ import { supabase } from '../lib/supabaseClient';
 import { 
    Megaphone, Zap, RefreshCw, Trophy, 
   ShieldAlert, Activity, CheckCircle2, XCircle, Play, 
-   BarChart3, 
+   BarChart3,
+   ChevronRight,
+   ChevronLeft, 
 } from 'lucide-react';
 
 export const Admin = ({ onBack }: { onBack: () => void }) => {
@@ -11,6 +13,17 @@ export const Admin = ({ onBack }: { onBack: () => void }) => {
   const [ news, setNews] = useState<any[]>([]);
   const [market, setMarket] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [currentQ, setCurrentQ] = useState(0);
+
+const changeQuestion = async (newIndex: number) => {
+  if (newIndex < 0 || newIndex > 3) return;
+  const { error } = await supabase
+    .from('game_state')
+    .update({ current_q_index: newIndex })
+    .eq('id', 1);
+
+  if (!error) setCurrentQ(newIndex);
+};
 
   // Inputs
   const [teamName, setTeamName] = useState('');
@@ -347,6 +360,26 @@ const setGlobalPhase = async (p: number) => {
                   <button onClick={resolvePhase1} className="w-full bg-zinc-800 text-zinc-400 py-3 text-[10px] font-bold uppercase flex items-center justify-center gap-2 hover:text-white transition-all">
                     <BarChart3 size={14}/> Resolve_Phase1_Scarcity
                   </button>
+                  <section className="p-6 mt-6 border bg-zinc-950 border-emerald-500/20 rounded-xl">
+  <h2 className="text-[10px] font-black text-emerald-500 mb-6 uppercase tracking-widest">
+    Global_Question_Controller
+  </h2>
+  <div className="flex items-center justify-between p-4 mb-4 bg-black border rounded-lg border-zinc-800">
+    <button onClick={() => changeQuestion(currentQ - 1)} className="p-2 hover:text-white">
+      <ChevronLeft />
+    </button>
+    <div className="text-center">
+      <p className="text-[10px] text-zinc-500 uppercase">Active Question</p>
+      <p className="text-xl font-black text-white">{currentQ + 1} / 4</p>
+    </div>
+    <button onClick={() => changeQuestion(currentQ + 1)} className="p-2 hover:text-white">
+      <ChevronRight />
+    </button>
+  </div>
+  <p className="text-[9px] text-zinc-600 text-center uppercase italic">
+    Changing this will flip every student's screen instantly.
+  </p>
+</section>
                 </div>
               </div>
             ) : (
@@ -379,6 +412,7 @@ const setGlobalPhase = async (p: number) => {
               </div>
             )}
           </section>
+          
         </div>
 
         {/* RIGHT: LIVE LEADERBOARD */}

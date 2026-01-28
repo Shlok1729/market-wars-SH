@@ -6,10 +6,12 @@ import { Phase1 } from './components/Phase1'
 import { Phase1Results } from './components/Phase1Results'
 import { Phase2 } from './components/Phase2'
 import { Admin } from './components/Admin'
-import { LogOut,} from 'lucide-react'
+import { BarChart3, LogOut,} from 'lucide-react'
 import { Toaster } from 'react-hot-toast'
+import { PortfolioModal } from './components/PortfolioModal'
 
 function App() {
+  const [showPortfolio, setShowPortfolio] = useState(false);
   // 1. Load everything from localStorage on startup
   const [team, setTeam] = useState<any>(null);
   const [view, setView] = useState<'game' | 'admin'>(() => {
@@ -140,6 +142,18 @@ function App() {
   return (
     <div className="relative min-h-screen bg-black">
       <Toaster position="top-right" />
+      <button 
+        onClick={() => setShowPortfolio(true)}
+        className="fixed bottom-6 right-6 z-[150] bg-emerald-500 text-black w-14 h-14 rounded-full shadow-[0_0_20px_rgba(16,185,129,0.4)] flex items-center justify-center hover:scale-110 active:scale-95 transition-all group"
+      >
+        <BarChart3 size={24} className="transition-transform group-hover:rotate-12" />
+        <span className="absolute -top-1 -right-1 bg-white text-[8px] font-black px-1.5 py-0.5 rounded-full">LIVE</span>
+      </button>
+
+      {/* 2. THE MODAL */}
+      {showPortfolio && (
+        <PortfolioModal team={team} onClose={() => setShowPortfolio(false)} />
+      )}
       
       {/* GLOBAL HUD CONTROLS */}
       <div className="fixed top-4 right-4 z-[100] flex gap-2">
