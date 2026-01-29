@@ -5,46 +5,46 @@ import { BrainCircuit, ArrowRight, Users, Loader2 } from 'lucide-react';
 const QUESTIONS = [
   { 
     id: 'lib', 
-    company: 'THE ALEXANDRIA PROJECT (LIBRARY)', 
-    q: "The University is cutting funding. How should the Library pivot to maintain its ₹10 valuation?", 
+    company: 'The Safe Haven (CAMPUS LIBRARY)', 
+    q: "A Global Tech Giant offers a multi-billion ₹ grant to digitize every book, but they demand exclusive ownership of student search data and reading habits. Decision?", 
     options: [
-      "CO-WORKING HUB: Rent quiet zones to high-end corporate freelancers.", 
-      "DATA FORTRESS: License its rare archives to train AI Large Language Models.", 
-      "IMMERSIVE LEARNING: Transform into a VR-based historical simulation center.", 
-      "STRICT ARCHIVE: Maintain traditional status and rely on private donations."
+      "DATA MONETIZATION: Accept the grant. Privacy is a small price for infinite funding and 100x digital speed.", 
+      "NEURAL INTERFACE: Use the funds to build a direct brain-to-library link, making physical study obsolete.", 
+      "PREMIUM PRIVACY: Reject the grant. Charge ₹500/hr for access to maintain 'Elite Privacy' and physical archives.", 
+      "TRADITIONALIST: Stay as a quiet archive. Avoid tech. Rely purely on student late fees and donations to survive."
     ] 
   },
   { 
     id: 'piz', 
-    company: 'SLICE & DICE LOGISTICS (PIZZA SHOP)', 
-    q: "A major competitor (Domino's) just opened nearby. What is your survival strategy?", 
+    company: 'Steady Performer (LOCAL PIZZA SHOP)', 
+    q: "A 'Black Swan' event: A lab-grown synthetic meat scandal hits the news. Your shop is the only one using 100% natural ingredients. How do you capitalize?", 
     options: [
-      "HYPER-LOCAL SUBSCRIPTION: Monthly 'Pizza Pass' for guaranteed recurring revenue.", 
-      "GHOST KITCHENS: Shut down the dining area and switch to 100% drone delivery.", 
-      "LUXURY ARTISANAL: Use rare imported ingredients and triple the price per slice.", 
-      "PRICE WAR: Lower quality and cut prices by 50% to drive the competitor out."
+      "MONOPOLY PRICING: Increase prices by 500%. Transition from a 'Pizza Shop' to a 'Luxury Health' brand.", 
+      "VERTICAL INTEGRATION: Buy the local cow farms. Control the entire supply chain to prevent corporate sabotage.", 
+      "FRANCHISE BLITZ: Sell thousands of low-cost franchises immediately while the 'Natural' trend is at its peak.", 
+      "COMMUNITY HERO: Keep prices low and give away free slices to students to gain 'Social Capital' for future favor."
     ] 
   },
   { 
     id: 'gym', 
-    company: 'TITAN BIOMETRICS (CAMPUS GYM)', 
-    q: "The Gym has collected massive amounts of student health data. How do they monetize it?", 
+    company: 'Growth Asset (CAMPUS GYM)', 
+    q: "The Gym discovers that its new 'Smart Mirrors' can predict a user's future chronic illnesses with 99% accuracy. An insurance conglomerate wants to buy this 'Prediction Engine'.", 
     options: [
-      "DATA PARTNERSHIPS: Sell anonymized biometric trends to health insurance firms.", 
-      "CREATOR STUDIOS: Build high-end TikTok/YouTube fitness production sets inside.", 
-      "BIO-HACKING LAB: Offer DNA-based diet plans and Cryotherapy for elite fees.", 
-      "COMMUNITY FOCUS: Ignore the data and focus on local sports tournaments."
+      "BIO-HACKING LAB: Don't sell. Charge students massive fees for 'Life-Extension' protocols based on their data.", 
+      "INSURANCE PARTNER: Sell the data. The Gym becomes a passive data-mining stream for global shareholders.", 
+      "FITNESS METAVERSE: Shut the physical gym. Move to haptic-suit workouts in a digital world only.", 
+      "THE UNDERGROUND: Delete the data to protect students. Pivot to a high-intensity, 'No-Tech' fight club model."
     ] 
   },
   { 
     id: 'inc', 
-    company: 'NEXUS VENTURES (STARTUP INCUBATOR)', 
-    q: "The lead startup is facing a massive 'Series A' funding crisis. Which pivot saves the asset?", 
+    company: 'Volatile Wildcard (STARTUP INCUBATOR)', 
+    q: "A student startup in the incubator has invented a 'Battery that lasts 50 years.' It will destroy the global energy industry. Major oil companies are threatening a buyout or a shutdown.", 
     options: [
-      "DEFENSE TECH: Pivot their hardware to government military contracts.", 
-      "CONSUMER VIRALITY: Launch a social media app to gain millions of users quickly.", 
-      "DEEP-TECH MOONSHOT: Focus 100% on a 10-year Quantum Computing patent.", 
-      "ACQUI-HIRE: Sell the team and talent to a Big Tech giant for immediate cash."
+      "DEFENSE CONTRACT: Move the startup into military classified research for immediate government protection.", 
+      "OPEN SOURCE: Release the blueprints for free. The stock might crash now, but the brand becomes immortal.", 
+      "IP WARFARE: Sue every energy company in the world. Spend all cash on the highest-paid aggressive lawyers.", 
+      "THE EXIT: Sell the patent to an oil company for them to bury it forever. Take the massive payout and run."
     ] 
   }
 ];
@@ -173,14 +173,14 @@ export const Phase2 = ({ team }: { team: any }) => {
                 </div>
                 <span className="text-4xl font-black leading-none text-zinc-900">0{step + 1}</span>
             </div>
-            <p className="text-[10px] text-zinc-500 uppercase font-bold mb-2 tracking-widest">Target_Asset: {QUESTIONS[step].company}</p>
-            <h1 className="mb-10 text-3xl font-black leading-tight tracking-tighter uppercase">{QUESTIONS[step].q}</h1>
+            <p className="text-[14px] text-green-500 uppercase font-bold mb-2 tracking-widest">Target_Asset: {QUESTIONS[step].company}</p>
+            <h1 className="mb-10 text-3xl font-black tracking-normal uppercase textleading-tight text-zinc-300">{QUESTIONS[step].q}</h1>
             <div className="grid grid-cols-1 gap-3">
               {QUESTIONS[step].options.map((opt) => (
                 <button 
                     key={opt} 
                     onClick={() => submitAnswer(opt)} 
-                    className="flex items-center justify-between p-5 text-left transition-all border bg-zinc-900 border-zinc-800 rounded-2xl hover:border-emerald-500 hover:bg-emerald-500/5 group"
+                    className="flex items-center justify-between p-5 tracking-normal text-left transition-all border bg-zinc-900 border-zinc-800 rounded-2xl hover:border-emerald-500 hover:bg-emerald-500/5 group"
                 >
                   <span className="text-sm font-bold uppercase group-hover:text-emerald-400">{opt}</span>
                   <ArrowRight size={18} className="transition-all text-zinc-700 group-hover:text-emerald-500 group-hover:translate-x-1" />
@@ -204,7 +204,7 @@ export const Phase2 = ({ team }: { team: any }) => {
                     const pct = totalVotes > 0 ? (count / totalVotes) * 100 : 0;
                     return (
                         <div key={opt}>
-                            <div className="flex justify-between text-[10px] font-bold uppercase mb-2">
+                            <div className="flex justify-between text-[14px] font-bold uppercase mb-2">
                                 <span className={count > 0 ? 'text-zinc-200' : 'text-zinc-700'}>{opt}</span>
                                 <span className="text-xs font-black text-emerald-500">{pct.toFixed(0)}%</span>
                             </div>
@@ -220,8 +220,8 @@ export const Phase2 = ({ team }: { team: any }) => {
              </div>
              
              <div className="p-6 text-center border border-dashed bg-zinc-900/30 border-zinc-800 rounded-2xl">
-                <p className="text-[10px] text-zinc-600 font-bold uppercase animate-pulse tracking-[0.2em]">
-                  Incoming Transmission Standby... <br/> Wait for Admin to push Question 0{step + 2}
+                <p className="text-[10px] text-zinc-400 font-bold uppercase animate-pulse tracking-[0.2em]">
+                  Incoming Transmission Standby... 
                 </p>
              </div>
           </div>

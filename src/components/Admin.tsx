@@ -5,10 +5,114 @@ import {
   ShieldAlert, Activity, CheckCircle2, XCircle, Play, 
    BarChart3,
    ChevronRight,
-   ChevronLeft, 
+   ChevronLeft,
+   Radio, 
 } from 'lucide-react';
 
 export const Admin = ({ onBack }: { onBack: () => void }) => {
+  const [isVotingOpen, setIsVotingOpen] = useState(false);
+  const finalizeWinners = async () => {
+    setLoading(true);
+    try {
+        // 1. Get all finalists
+        const { data: finalists } = await supabase.from('teams').select('id, team_name, founder_asset').eq('is_finalist', true);
+        
+        // 2. Get all votes
+        const { data: votes } = await supabase.from('final_votes').select('finalist_team_id');
+        
+        if (!finalists || !votes) return;
+
+        // 3. Tally
+        const tally = finalists.map(f => ({
+            ...f,
+            count: votes.filter(v => v.finalist_team_id === f.id).length
+        })).sort((a, b) => b.count - a.count);
+
+        // 4. Wipe old winners and insert top 3
+        await supabase.from('winners_circle').delete().neq('rank', 0);
+        
+        const top3 = tally.slice(0, 3).map((team, index) => ({
+            rank: index + 1,
+            team_name: team.team_name,
+            founder_asset: team.founder_asset,
+            vote_count: team.count
+        }));
+
+        await supabase.from('winners_circle').insert(top3);
+
+        // 5. Switch global phase to 5
+        await supabase.from('teams').update({ phase: 5 }).neq('status', 'god');
+        
+        alert("GAME OVER: WINNERS CIRCLE IS LIVE!");
+    } catch (err) {
+        alert("Error finalizing: " + err);
+    }
+    setLoading(false);
+};
+
+const initializePhase4 = async () => {
+    setLoading(true);
+    // 1. Get all teams and calculate Net Worth (Logic from previous step)
+    const { data: teams } = await supabase.from('teams').select('*');
+    const { data: prices } = await supabase.from('stock_prices').select('*');
+    const { data: txs } = await supabase.from('transactions').select('*');
+    const pMap: any = {};
+    prices?.forEach(p => pMap[p.symbol] = Number(p.current_price));
+
+    const rankings = teams!.map(t => {
+        let equity = 0;
+        txs!.filter(tx => tx.team_id === t.id).forEach(tx => {
+            equity += (tx.amount * (pMap[tx.asset_id] || 0));
+        });
+        return { id: t.id, netWorth: Number(t.balance) + equity };
+    }).sort((a, b) => b.netWorth - a.netWorth);
+
+    // 2. Mark Top 8 as Finalists
+    const top8Ids = rankings.slice(0, 8).map(r => r.id);
+    await supabase.from('teams').update({ is_finalist: false }).neq('id', 'god'); // Reset
+    await supabase.from('teams').update({ is_finalist: true }).in('id', top8Ids);
+    
+    // 3. Move room to Phase 4
+    await supabase.from('teams').update({ phase: 4 }).neq('status', 'god');
+    
+    alert("PHASE 4 ACTIVE: Top 8 Finalists Selected!");
+    setLoading(false);
+};
+
+const toggleVoting = async (open: boolean) => {
+    await supabase.from('game_state').update({ is_voting_open: open }).eq('id', 1);
+    setIsVotingOpen(open);
+};
+
+  const [currentEvent, setCurrentEvent] = useState(0);
+
+const startPhase3 = async () => {
+    // Switch all active teams to Phase 3
+    const { error } = await supabase.from('teams').update({ phase: 3 }).neq('status', 'god');
+    if (!error) alert("ROOM TRANSITIONED TO PHASE 3: CHAOS ROUND");
+};
+
+const updateEventIndex = async (newIdx: number) => {
+    if (newIdx < 0 || newIdx > 4) return;
+    const { error } = await supabase
+        .from('game_state')
+        .update({ current_event_index: newIdx })
+        .eq('id', 1);
+    
+    if (!error) setCurrentEvent(newIdx);
+};
+
+  const [eventIdx, setEventIdx] = useState(0);
+
+const triggerNextEvent = async (newIdx: number) => {
+  if (newIdx < 0 || newIdx > 4) return;
+  const { error } = await supabase
+    .from('game_state')
+    .update({ current_event_index: newIdx })
+    .eq('id', 1);
+
+  if (!error) setEventIdx(newIdx);
+};
   const [teams, setTeams] = useState<any[]>([]);
   const [ news, setNews] = useState<any[]>([]);
   const [market, setMarket] = useState<any>(null);
@@ -32,20 +136,49 @@ const changeQuestion = async (newIndex: number) => {
   const [marketQuestion, setMarketQuestion] = useState('');
 
   const refreshData = async () => {
-    setLoading(true);
-    try {
-      const { data: tData } = await supabase.from('teams').select('*').order('balance', { ascending: false });
-      const { data: nData } = await supabase.from('market_news').select('*').order('created_at', { ascending: false });
-      const { data: mData } = await supabase.from('live_market').select('*').eq('is_active', true).maybeSingle();
-      
-      if (tData) setTeams(tData);
-      if (nData) setNews(nData);
-      if (mData) setMarket(mData); else setMarket(null);
-    } catch (err) {
-      console.error("Fetch Error:", err);
+  setLoading(true);
+  try {
+    // 1. Fetch Teams, News, Active Market, Prices, and all Transactions
+    const { data: tData } = await supabase.from('teams').select('*');
+    const { data: nData } = await supabase.from('market_news').select('*').order('created_at', { ascending: false });
+    const { data: mData } = await supabase.from('live_market').select('*').eq('is_active', true).maybeSingle();
+    const { data: pData } = await supabase.from('stock_prices').select('*');
+    const { data: allTxs } = await supabase.from('transactions').select('*');
+
+    if (tData && pData && allTxs) {
+      // Map prices for easy lookup
+      const pMap: any = {};
+      pData.forEach(p => pMap[p.symbol] = Number(p.current_price));
+
+      // 2. Calculate Net Worth for every team
+      const calculatedLeaderboard = tData.map(team => {
+        let equityValue = 0;
+        const teamTxs = allTxs.filter(tx => tx.team_id === team.id);
+        
+        // Sum up the value of their holdings
+        teamTxs.forEach(tx => {
+          const currentPrice = pMap[tx.asset_id] || 0;
+          equityValue += (tx.amount * currentPrice);
+        });
+
+        return {
+          ...team,
+          equityValue,
+          netWorth: Number(team.balance) + equityValue
+        };
+      });
+
+      // 3. Sort by Net Worth (Wealthiest first)
+      setTeams(calculatedLeaderboard.sort((a, b) => b.netWorth - a.netWorth));
     }
-    setLoading(false);
-  };
+
+    if (nData) setNews(nData);
+    if (mData) setMarket(mData); else setMarket(null);
+  } catch (err) {
+    console.error("Leaderboard Sync Error:", err);
+  }
+  setLoading(false);
+};
 
   useEffect(() => {
     refreshData();
@@ -145,7 +278,7 @@ const changeQuestion = async (newIndex: number) => {
         { 
           team_name: teamName.toUpperCase(), 
           password: password, 
-          balance: 600, 
+          balance: 6000, 
           founder_asset: founderAsset, 
           phase: 1 
         }
@@ -252,7 +385,7 @@ const changeQuestion = async (newIndex: number) => {
     }
 
     await supabase.from('live_market').update({ is_active: false, resolved_winner: winner }).eq('id', market.id);
-    alert(`Market Resolved! Winners paid $1000 per unit.`);
+    alert(`Market Resolved! Winners paid ₹1000 per unit.`);
     setLoading(false);
     refreshData();
   };
@@ -301,6 +434,22 @@ const setGlobalPhase = async (p: number) => {
               <button onClick={() => setGlobalPhase(1)} className="border border-zinc-800 p-3 text-[12px] hover:bg-zinc-900 text-left flex justify-between uppercase">Phase 1: Trade <span>{teams[0]?.phase === 1 && '●'}</span></button>
               <button onClick={() => setGlobalPhase(11)} className="border border-zinc-800 p-3 text-[12px] hover:bg-zinc-900 text-left flex justify-between uppercase">Phase 1.5: Results <span>{teams[0]?.phase === 11 && '●'}</span></button>
               <button onClick={() => setGlobalPhase(2)} className="border border-zinc-800 p-3 text-[12px] hover:bg-zinc-900 text-left flex justify-between uppercase">Phase 2: Opinion Market <span>{teams[0]?.phase === 2 && '●'}</span></button>
+              <button onClick={finalizeWinners} className="w-full bg-yellow-500 text-black py-4 font-black uppercase text-xs mt-4 shadow-[0_0_20px_rgba(234,179,8,0.3)]">
+    Finalize Tally & Reveal Winners
+</button>
+              <section className="p-6 mt-6 border bg-zinc-950 border-emerald-500/20 rounded-xl">
+    <h2 className="text-[10px] font-black text-emerald-500 mb-4 uppercase">Phase_4: The_Pitch</h2>
+    <div className="space-y-3">
+        <button onClick={initializePhase4} className="w-full py-3 text-xs font-black text-black uppercase bg-emerald-600">
+            Identify Top 8 & Launch Phase 4
+        </button>
+        <div className="flex gap-2">
+            <button onClick={() => toggleVoting(true)} className="flex-1 bg-zinc-800 text-white py-2 text-[10px] font-bold uppercase hover:bg-emerald-600 transition-all">Open Voting</button>
+            <button onClick={() => toggleVoting(false)} className="flex-1 bg-zinc-800 text-white py-2 text-[10px] font-bold uppercase hover:bg-rose-600 transition-all">Close Voting</button>
+        </div>
+    </div>
+</section>
+              
             </div>
           </section>
           <section className="p-6 mt-6 border rounded shadow-xl bg-zinc-950 border-red-900/30">
@@ -380,6 +529,49 @@ const setGlobalPhase = async (p: number) => {
     Changing this will flip every student's screen instantly.
   </p>
 </section>
+<section className="p-6 mt-6 border shadow-xl bg-zinc-950 border-rose-900/30 rounded-xl">
+    <h2 className="text-[10px] font-black text-rose-500 mb-6 uppercase tracking-[0.2em] flex items-center gap-2">
+        <Radio size={14} className="animate-pulse" /> Phase_3: Chaos_Controller
+    </h2>
+    
+    <div className="space-y-4">
+        {/* Step A: Switch the room */}
+        <button 
+            onClick={startPhase3}
+            className="w-full py-3 text-xs font-black text-white uppercase transition-all border bg-zinc-900 border-rose-900/50 hover:bg-rose-900"
+        >
+            Activate Phase 3 UI
+        </button>
+
+        <div className="h-px bg-zinc-900"></div>
+
+        {/* Step B: Control the Events */}
+        <div className="flex items-center justify-between p-3 bg-black border rounded border-zinc-800">
+            <button onClick={() => updateEventIndex(currentEvent - 1)} className="hover:text-rose-500">
+                <ChevronLeft size={20} />
+            </button>
+            <div className="text-center">
+                <p className="text-[9px] text-zinc-600 uppercase font-bold">Current_Event</p>
+                <p className="text-xl font-black text-white">{currentEvent} / 4</p>
+            </div>
+            <button onClick={() => updateEventIndex(currentEvent + 1)} className="hover:text-rose-500">
+                <ChevronRight size={20} />
+            </button>
+        </div>
+
+        <p className="text-[8px] text-zinc-700 text-center uppercase">
+            {currentEvent === 0 ? "No event active" : `Broadcasting Event #${currentEvent} to all terminals`}
+        </p>
+
+        {/* Reset Button */}
+        <button 
+            onClick={() => updateEventIndex(0)}
+            className="w-full py-2 text-[9px] font-bold text-zinc-500 uppercase border border-zinc-900 hover:text-white"
+        >
+            Clear Screen / Reset Events
+        </button>
+    </div>
+</section>
                 </div>
               </div>
             ) : (
@@ -417,33 +609,53 @@ const setGlobalPhase = async (p: number) => {
 
         {/* RIGHT: LIVE LEADERBOARD */}
         <div className="lg:col-span-4">
-          <section className="overflow-hidden border rounded shadow-2xl bg-zinc-950 border-zinc-900">
-            <div className="flex items-center justify-between p-4 border-b bg-zinc-900 border-zinc-800">
-               <h2 className="text-[10px] font-black text-white flex items-center gap-2 uppercase tracking-widest">
-                 <Trophy size={14} className="text-yellow-500"/> Realtime_Leaderboard
-               </h2>
-               <span className="text-[9px] text-zinc-500 uppercase">{teams.length} Units</span>
+  <section className="overflow-hidden border rounded shadow-2xl bg-zinc-950 border-zinc-900">
+    <div className="flex items-center justify-between p-4 border-b bg-zinc-900 border-zinc-800">
+       <h2 className="text-[10px] font-black text-white flex items-center gap-2 uppercase tracking-widest">
+         <Trophy size={14} className="text-yellow-500"/> Realtime_Net_Worth_Leaderboard
+       </h2>
+       <span className="text-[9px] text-zinc-500 uppercase">{teams.length} Units</span>
+    </div>
+    <div className="max-h-[750px] overflow-y-auto">
+      {teams.length > 0 ? teams.map((t, idx) => (
+        <div key={t.id || idx} className="flex items-center justify-between p-4 transition-all border-b border-zinc-900 hover:bg-emerald-500/5 group">
+          <div className="flex items-center gap-3">
+            <span className="text-[10px] text-zinc-700 font-black">#{idx + 1}</span>
+            <div>
+              <p className="text-sm font-bold text-white uppercase transition-colors group-hover:text-emerald-500">
+                {t.team_name}
+                {t.is_finalist && <span className="ml-2 text-[8px] bg-yellow-500 text-black px-1 rounded">FINALIST</span>}
+              </p>
+              <p className="text-[10px] text-zinc-500 uppercase tracking-tighter">
+                Stake: {t.founder_asset} // Ph{t.phase}
+              </p>
+              <div className="flex gap-2 mt-1 text-[8px] font-bold text-zinc-600 uppercase">
+                <span>Purse: ₹{Number(t.balance).toFixed(0)}</span>
+                <span>Equity: ₹{t.equityValue.toFixed(0)}</span>
+              </div>
             </div>
-            <div className="max-h-[750px] overflow-y-auto">
-              {teams.length > 0 ? teams.map((t, idx) => (
-                <div key={idx} className="flex items-center justify-between p-4 transition-all border-b border-zinc-900 hover:bg-emerald-500/5 group">
-                  <div className="flex items-center gap-3">
-                    <span className="text-[10px] text-zinc-700 font-black">#{idx + 1}</span>
-                    <div>
-                      <p className="font-bold text-white uppercase transition-colors text-s group-hover:text-emerald-500">{t.team_name}</p>
-                      <p className="text-[12px] text-white uppercase">Stake: {t.founder_asset} // P{t.phase}</p>
-                    </div>
-                  </div>
-                  <p className="font-mono text-sm font-bold text-emerald-500">
-                    ${(Number(t.balance) || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                  </p>
-                </div>
-              )) : (
-                <div className="p-8 text-center text-[10px] text-zinc-700 uppercase italic">No teams detected...</div>
-              )}
-            </div>
-          </section>
+          </div>
+          <div className="text-right">
+            <p className="text-[8px] text-zinc-500 font-bold uppercase tracking-widest mb-1">Total_Valuation</p>
+            <p className="font-mono text-base font-black tracking-tighter text-emerald-500">
+              ₹{(t.netWorth || 0).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+            </p>
+          </div>
         </div>
+      )) : (
+        <div className="p-12 text-center">
+            <div className="w-6 h-6 mx-auto mb-4 border-2 rounded-full border-zinc-800 border-t-emerald-500 animate-spin"></div>
+            <p className="text-[10px] text-zinc-700 uppercase italic tracking-widest">Awaiting Team Data...</p>
+        </div>
+      )}
+    </div>
+    <div className="p-3 text-center border-t bg-zinc-900/50 border-zinc-900">
+        <p className="text-[8px] text-zinc-600 uppercase font-black tracking-[0.3em]">
+          Ranking Algorithm: (Purse + Asset_Equity)
+        </p>
+    </div>
+  </section>
+</div>
 
       </div>
     </div>

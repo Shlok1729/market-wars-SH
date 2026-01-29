@@ -52,7 +52,7 @@ export const PortfolioModal = ({ team, onClose }: { team: any, onClose: () => vo
             <h2 className="text-sm font-black tracking-widest text-white uppercase text-neon">Asset_Inventory</h2>
           </div>
           <button onClick={onClose} className="p-2 transition-colors rounded-full hover:bg-white/5">
-            <X size={20} className="text-zinc-500" />
+            <X size={20} className="text-red-800" />
           </button>
         </div>
 
@@ -65,12 +65,12 @@ export const PortfolioModal = ({ team, onClose }: { team: any, onClose: () => vo
             </p>
             <div className="flex justify-center gap-4 mt-4">
                 <div className="text-left">
-                    <p className="text-[8px] text-zinc-600 uppercase font-bold">Liquid_Cash</p>
+                    <p className="text-[12px] text-zinc-600 uppercase font-bold">Liquid_Cash</p>
                     <p className="text-sm font-bold text-zinc-300">₹{Number(team.balance).toLocaleString()}</p>
                 </div>
                 <div className="w-px h-8 bg-zinc-800"></div>
                 <div className="text-left">
-                    <p className="text-[8px] text-zinc-600 uppercase font-bold">Stock_Equity</p>
+                    <p className="text-[12px] text-zinc-600 uppercase font-bold">Stock_Equity</p>
                     <p className="text-sm font-bold text-emerald-500">₹{stockValue.toLocaleString()}</p>
                 </div>
             </div>
@@ -85,13 +85,13 @@ export const PortfolioModal = ({ team, onClose }: { team: any, onClose: () => vo
                         {symbol}
                     </div>
                     <div>
-                        <p className="text-xs font-black text-white uppercase">{symbol === 'lib' ? 'Library' : symbol === 'piz' ? 'Pizza' : symbol === 'gym' ? 'Gym' : 'Incubator'}</p>
-                        <p className="text-[10px] text-zinc-500 font-bold">{holdings[symbol]} Shares owned</p>
+                        <p className="text-xs font-black text-green-500 uppercase">{symbol === 'lib' ? 'Library' : symbol === 'piz' ? 'Pizza' : symbol === 'gym' ? 'Gym' : 'Incubator'}</p>
+                        <p className="text-[14px] text-zinc-400 font-bold">{holdings[symbol]} Shares owned</p>
                     </div>
                 </div>
                 <div className="text-right">
-                    <p className="text-sm font-black text-white">₹{(holdings[symbol] * (prices[symbol] || 0)).toLocaleString()}</p>
-                    <p className="text-[9px] text-zinc-600 font-bold uppercase">Rate: ₹{prices[symbol] || '0.00'}</p>
+                    <p className="text-sm font-black text-green-500">₹{(holdings[symbol] * (prices[symbol] || 0)).toLocaleString()}</p>
+                    <p className="text-[14px] text-zinc-200 font-bold uppercase">Rate: ₹{prices[symbol] || '0.00'}</p>
                 </div>
               </div>
             ))}

@@ -158,14 +158,14 @@ const updateInput = (assetId: string, val: any) => {
             <span className="bg-emerald-500 text-black px-2 py-0.5 rounded text-xs font-bold uppercase">P1</span>
             <span className="text-emerald-500 uppercase drop-shadow-[0_0_10px_rgba(16,185,129,0.3)]">{team.team_name}</span>
           </h1>
-          <p className="text-[12px] text-zinc-600 mt-2 uppercase tracking-[0.4em]">Equity_Market_Protocol // Terminal_{team.id.substring(0,4)}</p>
+          <p className="text-[12px] text-zinc-200 mt-2 uppercase tracking-[0.4em]">Equity_Market_Protocol // Terminal_{team.id.substring(0,4)}</p>
         </div>
 
         <div className="flex items-center gap-4 px-6 py-4 mt-6 border md:mt-0 bg-zinc-900/20 border-zinc-800 rounded-xl backdrop-blur-md">
             <Wallet className="text-emerald-500" size={24} />
             <div>
-              <p className="text-[12px] text-zinc-500 uppercase tracking-[0.2em] mb-1">Available_Capital</p>
-              <p className="text-2xl font-bold text-white">${team.balance.toLocaleString()}</p>
+              <p className="text-[12px] font-bold text-zinc-500 uppercase tracking-[0.2em] mb-1">Available_Capital</p>
+              <p className="text-2xl font-bold text-white">₹{team.balance.toLocaleString()}</p>
             </div>
         </div>
       </div>
@@ -186,15 +186,15 @@ const updateInput = (assetId: string, val: any) => {
                 {asset.icon}
               </div>
               <div className="text-right">
-                <p className="text-[10px] text-zinc-600 uppercase font-bold tracking-widest">Holdings</p>
+                <p className="text-[12x] text-zinc-600 uppercase font-bold tracking-widest">Holdings</p>
                 <p className={`text-2xl font-black font-mono ${holdings[asset.id] > 0 ? 'text-white' : 'text-zinc-800'}`}>
-                  {holdings[asset.id].toLocaleString()} <span className="text-[10px] opacity-40">SHARES</span>
+                  {holdings[asset.id].toLocaleString()} <span className="text-[12px] opacity-40">SHARES</span>
                 </p>
               </div>
             </div>
 
             <h3 className="mb-1 text-lg font-bold tracking-tight text-white uppercase">{asset.name}</h3>
-            <p className="text-[15px] text-zinc-500 mb-6 uppercase tracking-wider">{asset.desc} @ $1.00/Share</p>
+            <p className="text-[15px] text-zinc-500 mb-6 uppercase tracking-wider">{asset.desc} @ ₹10.00/Share</p>
 
             {/* SATURATION BAR */}
             {/* <div className="mb-8">

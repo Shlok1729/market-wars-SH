@@ -9,6 +9,9 @@ import { Admin } from './components/Admin'
 import { BarChart3, LogOut,} from 'lucide-react'
 import { Toaster } from 'react-hot-toast'
 import { PortfolioModal } from './components/PortfolioModal'
+import { Phase3 } from './components/Phase3'
+import { Phase4 } from './components/Phase4'
+import { WinnersCircle } from './components/WinnersCircle'
 
 function App() {
   const [showPortfolio, setShowPortfolio] = useState(false);
@@ -165,10 +168,10 @@ function App() {
         </button> */}
         <button 
           onClick={handleLogout} 
-          className="flex items-center gap-2 px-3 py-2 transition-all border rounded-lg bg-zinc-900/80 backdrop-blur text-zinc-500 border-zinc-800 hover:text-rose-500"
+          className="flex items-center gap-2 px-3 py-2 transition-all border rounded-lg bg-zinc-900/80 backdrop-blur text-zinc-200 border-zinc-800 hover:text-rose-500"
         >
           <LogOut size={16} />
-          <span className="text-[9px] font-black uppercase hidden md:inline">Terminate</span>
+          <span className="text-[10px] font-black uppercase hidden md:inline">Terminate</span>
         </button>
       </div>
 
@@ -177,6 +180,9 @@ function App() {
         {team.phase === 1 && <Phase1 team={team} setTeam={setTeam} />}
         {team.phase === 11 && <Phase1Results team={team} />}
         {team.phase === 2 && <Phase2 team={team} setTeam={setTeam} />}
+        {team.phase === 3 && <Phase3 />} {/* Add this line */}
+        {team.phase === 4 && <Phase4 team={team} />} {/* Add this */}
+        {team.phase === 5 && <WinnersCircle />} {/* ADD THIS */}
       </div>
     </div>
   );
