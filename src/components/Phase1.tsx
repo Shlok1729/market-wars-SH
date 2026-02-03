@@ -17,6 +17,9 @@ export const Phase1: React.FC<Phase1Props> = ({ team, setTeam }) => {
   const [holdings, setHoldings] = useState<{ [key: string]: number }>({
     lib: 0, piz: 0, gym: 0, inc: 0
   });
+  const [prices, setPrices] = useState<{ [key: string]: number }>({
+    lib: 10, piz: 10, gym: 10, inc: 10
+  });
   const [marketVolume, setMarketVolume] = useState<{ [key: string]: number }>({
     lib: 0, piz: 0, gym: 0, inc: 0
   });
@@ -41,6 +44,12 @@ export const Phase1: React.FC<Phase1Props> = ({ team, setTeam }) => {
         myTx.forEach(t => h[t.asset_id] += t.amount);
         setHoldings(h);
       }
+      const { data: pData } = await supabase.from('stock_prices').select('*');
+      if (pData) {
+        const pMap: any = {};
+        pData.forEach(p => pMap[p.symbol] = Number(p.current_price));
+        setPrices(pMap);
+      }
       const { data: allTx } = await supabase.from('transactions').select('asset_id, amount');
       if (allTx) {
         const v: any = { lib: 0, piz: 0, gym: 0, inc: 0 };
@@ -58,6 +67,11 @@ export const Phase1: React.FC<Phase1Props> = ({ team, setTeam }) => {
         if (p.new.team_id === team.id) {
           setHoldings(prev => ({ ...prev, [p.new.asset_id]: (prev[p.new.asset_id] || 0) + p.new.amount }));
         }
+      })
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'stock_prices' }, (p) => {
+        console.log("Price Update Received:", p.new);
+        setPrices(prev => ({ ...prev, [p.new.symbol]: Number(p.new.current_price) }));
+        toast.success(`${p.new.name} price adjusted to ₹${p.new.current_price}`, { icon: '📊' });
       })
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'market_news' }, (payload) => {
         toast.custom((t) => (
@@ -88,8 +102,8 @@ export const Phase1: React.FC<Phase1Props> = ({ team, setTeam }) => {
     // 1. Validation
     if (!qty || qty <= 0) return alert("ENTER A VALID QUANTITY");
     
-    const price = 10; 
-    const totalCost = qty * price;
+    const currentMarketPrice = prices[assetId] || 10; 
+    const totalCost = qty * currentMarketPrice;
 
     if (side === 'buy' && team.balance < totalCost) {
       return alert("INSUFFICIENT FUNDS");
@@ -110,7 +124,7 @@ export const Phase1: React.FC<Phase1Props> = ({ team, setTeam }) => {
         team_id: team.id,
         asset_id: assetId,
         amount: transactionAmount,
-        price_at_time: price,
+        price_at_time: currentMarketPrice,
         type: side === 'buy' ? 'buy_equity' : 'sell_equity'
       }]);
 
@@ -132,6 +146,29 @@ export const Phase1: React.FC<Phase1Props> = ({ team, setTeam }) => {
       // in useEffect will catch the transaction and update it automatically!
       
       console.log("Trade successful!");
+      if (side === 'buy') {
+        toast.success(`PURCHASE SUCCESSFUL: ${qty} SHARES AT ₹${currentMarketPrice.toFixed(2)}`, {
+          style: {
+            background: '#064e3b',
+            color: '#fff',
+            border: '1px solid #10b981',
+            fontSize: '12px',
+            fontWeight: 'bold'
+          },
+          icon: '💰'
+        });
+      } else {
+        toast.success(`SALE EXECUTED: ${qty} SHARES AT ₹${currentMarketPrice.toFixed(2)}`, {
+          style: {
+            background: '#4c0519',
+            color: '#fff',
+            border: '1px solid #f43f5e',
+            fontSize: '12px',
+            fontWeight: 'bold'
+          },
+          icon: '📉'
+        });
+      }
     } catch (err: any) {
       console.error("TRADE ERROR:", err.message);
       alert("Trade Failed: " + err.message);
@@ -194,7 +231,7 @@ const updateInput = (assetId: string, val: any) => {
             </div>
 
             <h3 className="mb-1 text-lg font-bold tracking-tight text-white uppercase">{asset.name}</h3>
-            <p className="text-[15px] text-zinc-500 mb-6 uppercase tracking-wider">{asset.desc} @ ₹10.00/Share</p>
+            <p className="text-[15px] text-zinc-500 mb-6 uppercase tracking-wider">{asset.desc} @ ₹{(prices[asset.id] || 10).toFixed(2)}/Share</p>
 
             {/* SATURATION BAR */}
             {/* <div className="mb-8">
