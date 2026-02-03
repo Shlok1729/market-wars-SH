@@ -186,7 +186,7 @@ if __name__ == "__main__":
     
     #oracle.calculate_sentiment_prices()
     
-    oracle.apply_random_event("A massive solar storm has knocked out the internet. High-tech \"VR\" and \"Brain-Link\" companies have stopped working. Only \"Traditional/Physical\" companies are making money") 
+    oracle.apply_random_event("Startup incubator gets massive funding by college thus getting a expansion opportunity.") 
     
     # oracle.resolve_final_market()
     

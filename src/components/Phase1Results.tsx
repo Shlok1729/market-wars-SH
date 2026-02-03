@@ -74,7 +74,7 @@ export const Phase1Results = ({ team }: { team: any }) => {
                     <tr>
                         <th className="p-6">RANK</th>
                         <th className="p-6">UNIT_IDENTIFIER</th>
-                        <th className="p-6 text-right">TOTAL_NET_WORTH</th>
+                        <th className="p-6 -ml-10 ">TOTAL_NET_WORTH</th>
                     </tr>
                 </thead>
                 <tbody className="divide-y divide-zinc-900">
@@ -90,7 +90,7 @@ export const Phase1Results = ({ team }: { team: any }) => {
                                     <span>Equity: ₹{t.equity.toFixed(0)}</span>
                                 </div>
                             </td>
-                            <td className="p-6 text-right">
+                            <td className="p-4 pr-10 text-center">
                                 <p className="text-2xl font-black tracking-tighter text-white">
                                     ₹{t.netWorth.toLocaleString(undefined, {maximumFractionDigits: 0})}
                                 </p>
