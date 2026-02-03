@@ -337,7 +337,7 @@ const changeQuestion = async (newIndex: number) => {
             }
         }
     }
-    alert("Phase 1 Scarcity Math Applied!");
+    alert("Phase 1 Scarcity Math Applied!!");
     setLoading(false);
     refreshData();
   };
