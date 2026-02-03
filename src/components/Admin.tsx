@@ -191,51 +191,78 @@ const changeQuestion = async (newIndex: number) => {
     return () => { supabase.removeChannel(channel); };
   }, []);
   const eliminateDownTo = async (count: number) => {
-    const confirm = window.confirm(`DANGER: This will permanently eliminate everyone except the Top ${count} teams. Their passwords will be changed. Proceed?`);
-    if (!confirm) return;
+  const confirm = window.confirm(`DANGER: This will purge everyone except the Top ${count} teams based on NET WORTH. Proceed?`);
+  if (!confirm) return;
 
-    setLoading(true);
+  setLoading(true);
 
-    try {
-      // 1. Get all currently active teams sorted by balance
-      const { data: allTeams, error: fetchError } = await supabase
-        .from('teams')
-        .select('id, team_name')
-        .eq('status', 'active')
-        .order('balance', { ascending: false });
+  try {
+    // 1. Fetch all necessary data for calculation
+    const { data: allTeams } = await supabase.from('teams').select('*').eq('status', 'active');
+    const { data: prices } = await supabase.from('stock_prices').select('*');
+    const { data: allTxs } = await supabase.from('transactions').select('*');
 
-      if (fetchError) throw fetchError;
-      if (!allTeams || allTeams.length <= count) {
-          alert(`Not enough teams to eliminate. Current active: ${allTeams?.length}`);
-          setLoading(false);
-          return;
-      }
+    if (!allTeams || !prices || !allTxs) throw new Error("Could not fetch data for ranking.");
 
-      // 2. Identify the Losers (everyone after the 'count' index)
-      const losers = allTeams.slice(count);
-      const loserIds = losers.map(l => l.id);
+    // 2. Map prices for easy lookup
+    const pMap: any = {};
+    prices.forEach(p => pMap[p.symbol] = Number(p.current_price));
 
-      // 3. Update losers in the Database
-      // We change their password to a random string + 'LOCKED' to prevent re-login
-      const { error: updateError } = await supabase
-        .from('teams')
-        .update({ 
-            status: 'eliminated',
-            password: `LOCKED_${Math.random().toString(36).slice(-8)}` 
-        })
-        .in('id', loserIds);
+    // 3. Calculate Net Worth for every team
+    const rankedTeams = allTeams.map(team => {
+      let equityValue = 0;
+      const teamTxs = allTxs.filter(tx => tx.team_id === team.id);
+      
+      // Calculate total holding value
+      teamTxs.forEach(tx => {
+        const currentPrice = pMap[tx.asset_id] || 0;
+        equityValue += (Number(tx.amount) * currentPrice);
+      });
 
-      if (updateError) throw updateError;
+      return {
+        id: team.id,
+        team_name: team.team_name,
+        netWorth: Number(team.balance) + equityValue
+      };
+    });
 
-      alert(`PURGE COMPLETE: ${losers.length} teams eliminated. Top ${count} remain.`);
-      refreshData();
+    // 4. Sort by Net Worth (Wealthiest at the top)
+    rankedTeams.sort((a, b) => b.netWorth - a.netWorth);
 
-    } catch (err: any) {
-      alert("Purge Failed: " + err.message);
-    } finally {
+    if (rankedTeams.length <= count) {
+      alert(`Operation aborted. Only ${rankedTeams.length} teams are active.`);
       setLoading(false);
+      return;
     }
-  };
+
+    // 5. Identify the Losers (everyone below the cut-off count)
+    const losers = rankedTeams.slice(count);
+    const loserIds = losers.map(l => l.id);
+
+    console.log("Eliminating losers based on Net Worth:", losers);
+
+    // 6. Update losers in the Database
+    // Change status to 'eliminated' and lock passwords
+    const { error: updateError } = await supabase
+      .from('teams')
+      .update({ 
+          status: 'eliminated',
+          password: `LOCKED_${Math.random().toString(36).slice(-8)}` 
+      })
+      .in('id', loserIds);
+
+    if (updateError) throw updateError;
+
+    alert(`BATTLE ROYALE COMPLETE: ${losers.length} teams eliminated. Top ${count} remain.`);
+    refreshData();
+
+  } catch (err: any) {
+    console.error(err);
+    alert("Purge Failed: " + err.message);
+  } finally {
+    setLoading(false);
+  }
+};
 
   // --- 1. TEAM REGISTRATION & AUTO-STAKE ---
   const handleRegister = async () => {
