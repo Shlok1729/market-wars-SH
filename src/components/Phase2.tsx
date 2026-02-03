@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
-import { BrainCircuit, ArrowRight, Users, Loader2 } from 'lucide-react';
+import { BrainCircuit, ArrowRight, Users, Loader2, Zap } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 
 const QUESTIONS = [
   { 
@@ -115,6 +116,24 @@ export const Phase2 = ({ team }: { team: any }) => {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'team_responses' }, () => {
         console.log("VOTE_SYNC: Refreshing Bars...");
         refreshUI();
+      })
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'market_news' }, (payload) => {
+        toast.custom((t) => (
+          <div className={`${t.visible ? 'animate-enter' : 'animate-leave'} max-w-md w-full bg-zinc-900 border-l-4 border-emerald-500 shadow-2xl p-4 flex items-start gap-3 pointer-events-auto ring-1 ring-black ring-opacity-5`}>
+            <div className="p-2 rounded bg-emerald-500/10">
+              <Zap size={20} className="text-emerald-500" />
+            </div>
+            <div className="flex-1">
+              <p className="text-[10px] text-emerald-500 font-black uppercase tracking-widest mb-1">
+                Incoming_Market_Flash
+              </p>
+              <p className="text-sm font-bold tracking-tight text-white uppercase">
+                {payload.new.message}
+              </p>
+            </div>
+          </div>
+        ), { duration: 6000 }); // Stays for 6 seconds
+        
       })
       .subscribe((status) => {
         console.log("REALTIME_CONNECTION:", status);

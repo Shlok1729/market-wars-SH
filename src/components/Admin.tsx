@@ -626,10 +626,10 @@ const setGlobalPhase = async (p: number) => {
                 {t.team_name}
                 {t.is_finalist && <span className="ml-2 text-[8px] bg-yellow-500 text-black px-1 rounded">FINALIST</span>}
               </p>
-              <p className="text-[10px] text-zinc-500 uppercase tracking-tighter">
+              <p className="text-[12px] text-zinc-500 uppercase tracking-tighter">
                 Stake: {t.founder_asset} // Ph{t.phase}
               </p>
-              <div className="flex gap-2 mt-1 text-[8px] font-bold text-zinc-600 uppercase">
+              <div className="flex gap-2 mt-1 text-[14px] font-bold text-zinc-300 uppercase">
                 <span>Purse: ₹{Number(t.balance).toFixed(0)}</span>
                 <span>Equity: ₹{t.equityValue.toFixed(0)}</span>
               </div>

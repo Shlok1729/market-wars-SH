@@ -56,151 +56,127 @@ MARKET_CONTEXT = {
 }
 
 class MarketOracle:
+    def __init__(self):
+        self.model_id = "gemini-2.0-flash"
+
     def _extract_json(self, text):
+        """Finds and parses JSON from AI response."""
         try:
             match = re.search(r'\{.*\}', text, re.DOTALL)
-            return json.loads(match.group()) if match else None
-        except: return None
+            if match:
+                return json.loads(match.group())
+            return json.loads(text)
+        except Exception as e:
+            print(f"❌ JSON ERROR: Could not parse AI response.")
+            print(f"DEBUG: AI replied with: {text}")
+            return None
+
+    def _update_market(self, price_dict):
+        """Updates Stock Prices and adds entry to Price Logs for the Graph."""
+        print(f"🛰️ Synchronizing with Database...")
+        for symbol, price in price_dict.items():
+            # Update current price
+            supabase.table("stock_prices").update({"current_price": price}).eq("symbol", symbol).execute()
+            # Log for the graph
+            supabase.table("price_logs").insert({"asset_id": symbol, "price": price}).execute()
+        
+        print(f"✅ SUCCESS: Market updated and graphed: {price_dict}")
 
     def calculate_sentiment_prices(self):
-        print("\n--- 🤖 AI ORACLE: ANALYZING FULL MARKET CONTEXT ---")
-        
-        # 1. Fetch all raw student answers
+        print("\n--- 🤖 AI ORACLE: ANALYZING COLLECTIVE VISION ---")
         res = supabase.table("team_responses").select("asset_symbol, selected_option").execute()
         raw_data = res.data
 
-        # 2. Structure the data into a "Boardroom Report" for Gemini
         report = {}
         for symbol, info in MARKET_CONTEXT.items():
             report[symbol] = {
-                "Company": info["name"],
-                "Current_Crisis": info["problem"],
-                "Market_Votes": {}
+                "Crisis": info["problem"],
+                "Votes": {}
             }
-            # Count how many teams chose each option
             for opt in info["options"]:
                 count = len([r for r in raw_data if r['asset_symbol'] == symbol and r['selected_option'] == opt])
-                report[symbol]["Market_Votes"][opt] = count
+                report[symbol]["Votes"][opt] = count
 
-        # 3. Build the Ultimate Prompt
         prompt = f"""
-        Act as a brutal, realistic Stock Market Simulation Engine. 
-        I am providing a 'Sentiment Report' containing the strategic decisions made by student teams for 4 assets.
-
-        SENTIMENT REPORT:
-        {json.dumps(report, indent=2)}
-
-        YOUR TASK:
-        Decide the new stock price for each asset based on these rules:
-        1. BASE PRICE: ₹10.00.
-        2. GROWTH: High-risk/high-reward options (like AI training or Moonshots) should increase price IF they are chosen by a minority (<20% of teams).
-        3. SCARCITY: If >60% of the room chose the SAME option, the price should drop or stay flat (₹5 - ₹11) because the strategy is 'over-crowded' and lacks unique value.
-        4. FAILURE: Options like 'Price War' or 'Strict Archive' are low-growth and should likely drop the price.
-        
-        PRICE RANGE: ₹1.00 to ₹200.00.
-
-        RETURN ONLY A JSON OBJECT:
-        {{"lib": price, "piz": price, "gym": price, "inc": price}}
+        Act as a Stock Market Algorithm.
+        DATA REPORT: {json.dumps(report, indent=2)}
+        TASK: Determine new stock prices (₹2.00 to ₹150.00). Baseline is ₹10.00.
+        Rule: If >70% teams chose same option, the price should stay flat or drop (₹5-12).
+        RETURN ONLY A JSON OBJECT: {{"lib": x, "piz": x, "gym": x, "inc": x}}
         """
-
-        try:
-            response = client.models.generate_content(model="gemini-2.0-flash", contents=prompt)
-            new_prices = self._extract_json(response.text)
-
-            if new_prices:
-                for symbol, price in new_prices.items():
-                    supabase.table("stock_prices").update({"current_price": price}).eq("symbol", symbol).execute()
-                print(f"✅ Market Prices updated by Gemini: {new_prices}")
-        except Exception as e:
-            print(f"❌ API Error: {e}")
-
-    # ... keep apply_random_event same as before ...
-    def resolve_final_market(self):
-        print("\n--- 🤖 AI ORACLE: EXECUTING FINAL MARKET RESOLUTION ---")
-        
-        # 1. Fetch the 4 Events
-        events = supabase.table("phase3_events").select("*").execute().data
-        
-        # 2. Fetch the previous sentiment prices (from Round 1)
-        sentiment_prices = supabase.table("stock_prices").select("*").execute().data
-        
-        # 3. Fetch collective student vision (Summary)
-        res = supabase.table("team_responses").select("asset_symbol, selected_option").execute()
-        
-        prompt = f"""
-        Act as the Global Market Settlement Authority. 
-        
-        HISTORICAL CONTEXT (PREVIOUS ROUND):
-        Initial Prices were ₹10. Current Sentiment-based prices are: {json.dumps(sentiment_prices)}
-        Collective Student Strategy: {json.dumps(res.data[:20])} (Sample)
-
-        THE 4 BREAKING NEWS EVENTS THAT JUST OCCURRED:
-        {json.dumps(events, indent=2)}
-
-        FINAL TASK:
-        Recalculate the absolute FINAL stock price for lib, piz, gym, inc.
-        Logic:
-        - How do the student's Phase 2 choices (Pivot strategies) hold up against these 4 new events?
-        - If a team chose 'Drone Delivery' and the Energy Crisis happened, the price should crash.
-        - If a team chose 'Data Fortress' and the Silicon Shortage happened, the price might moon.
-        - Be brutal. Winners should win big (Max ₹500), losers should crash (Min ₹0.50).
-
-        RETURN ONLY A JSON OBJECT:
-        {{"lib": final_price, "piz": final_price, "gym": final_price, "inc": final_price}}
-        """
-
-        response = client.models.generate_content(model="gemini-2.0-flash", contents=prompt)
-        final_prices = self._extract_json(response.text)
-
-        if final_prices:
-            for symbol, price in final_prices.items():
-                supabase.table("stock_prices").update({"current_price": price}).eq("symbol", symbol).execute()
-            print(f"🏁 FINAL SETTLEMENT COMPLETE: {final_prices}")
-
-    
-    def apply_random_event(self, event_text):
-        """Chaos Round: Changes prices based on an external event."""
-        print(f"\n--- 🌪 APPLYING EVENT: {event_text.upper()} ---")
-        
-        current = supabase.table("stock_prices").select("*").execute().data
-        prompt = f"Current Prices: {json.dumps(current)}\nEvent: {event_text}\nRecalculate prices. Return ONLY JSON."
 
         try:
             response = client.models.generate_content(model=self.model_id, contents=prompt)
             new_prices = self._extract_json(response.text)
             if new_prices:
-                for symbol, price in new_prices.items():
-                    supabase.table("stock_prices").update({"current_price": price}).eq("symbol", symbol).execute()
-                print(f"✅ Event applied! New Prices: {new_prices}")
+                self._update_market(new_prices)
         except Exception as e:
             print(f"❌ API Error: {e}")
-    def get_final_winner(self):
-     print("\n--- 🏁 FINAL VOTE COUNTING ---")
-    
-    # 1. Fetch all finalists
-    finalists = supabase.table("teams").select("id, team_name").eq("is_finalist", True).execute().data
-    
-    # 2. Fetch all votes
-    votes = supabase.table("final_votes").select("finalist_team_id").execute().data
-    
-    # 3. Count votes
-    results = {}
-    for f in finalists:
-        results[f['team_name']] = 0
+
+    def apply_random_event(self, event_text):
+        print(f"\n--- 🌪 APPLYING EVENT: {event_text.upper()} ---")
+        current = supabase.table("stock_prices").select("*").execute().data
         
-    for v in votes:
-        for f in finalists:
-            if v['finalist_team_id'] == f['id']:
-                results[f['team_name']] += 1
-                
-    # 4. Sort and Print
-    sorted_results = sorted(results.items(), key=lambda x: x[1], reverse=True)
-    
-    print(f"{'RANK':<5} | {'TEAM NAME':<20} | {'VOTES':<10}")
-    print("-" * 40)
-    for i, (name, count) in enumerate(sorted_results, 1):
-        medal = "🏆" if i == 1 else "🥈" if i == 2 else "🥉" if i == 3 else "  "
-        print(f"{medal} #{i:<2} | {name:<20} | {count} votes")        
+        prompt = f"""
+        Current Prices: {json.dumps(current)}
+        Event: {event_text}
+        Task: Recalculate prices (₹1.00 to ₹300.00) based on logic.
+        RETURN ONLY JSON: {{"lib": x, "piz": x, "gym": x, "inc": x}}
+        """
+        
+        try:
+            response = client.models.generate_content(model=self.model_id, contents=prompt)
+            new_prices = self._extract_json(response.text)
+            if new_prices:
+                self._update_market(new_prices)
+        except Exception as e:
+            print(f"❌ API Error: {e}")
+
+    def resolve_final_market(self):
+        print("\n--- 🏁 AI ORACLE: FINAL SETTLEMENT ---")
+        events = supabase.table("phase3_events").select("*").execute().data
+        current_prices = supabase.table("stock_prices").select("*").execute().data
+        responses = supabase.table("team_responses").select("asset_symbol, selected_option").execute().data
+
+        prompt = f"""
+        Act as the Global Settlement Authority.
+        Current Prices: {json.dumps(current_prices)}
+        FINAL EVENTS: {json.dumps(events)}
+        STUDENT CHOICES: {json.dumps(responses[:30])}
+        TASK: Recalculate FINAL prices (₹0.10 to ₹500.00).
+        RETURN ONLY JSON: {{"lib": x, "piz": x, "gym": x, "inc": x}}
+        """
+
+        try:
+            response = client.models.generate_content(model=self.model_id, contents=prompt)
+            final_prices = self._extract_json(response.text)
+            if final_prices:
+                self._update_market(final_prices)
+        except Exception as e:
+            print(f"❌ API Error: {e}")
+
+    def get_final_winner(self):
+        """Fixed Indentation and added self"""
+        print("\n--- 🏁 FINAL VOTE COUNTING ---")
+        finalists = supabase.table("teams").select("id, team_name").eq("is_finalist", True).execute().data
+        votes = supabase.table("final_votes").select("finalist_team_id").execute().data
+        
+        if not finalists:
+            print("No finalists found."); return
+
+        results = {f['team_name']: 0 for f in finalists}
+        for v in votes:
+            for f in finalists:
+                if v['finalist_team_id'] == f['id']:
+                    results[f['team_name']] += 1
+                    
+        sorted_results = sorted(results.items(), key=lambda x: x[1], reverse=True)
+        
+        print(f"{'RANK':<5} | {'TEAM NAME':<20} | {'VOTES':<10}")
+        print("-" * 40)
+        for i, (name, count) in enumerate(sorted_results, 1):
+            medal = "🏆" if i == 1 else "🥈" if i == 2 else "🥉" if i == 3 else "  "
+            print(f"{medal} #{i:<2} | {name:<20} | {count} votes")
 
 # --- EXECUTION ---
 if __name__ == "__main__":
@@ -208,16 +184,10 @@ if __name__ == "__main__":
     
     # UNCOMMENT THE ONE YOU WANT TO RUN:
     
-   # MOMENT 1: Run this after questions
-    # oracle.calculate_sentiment_prices() 
-
-    # MOMENT 2: Run this for each news flash (Optional)
-    # oracle.apply_random_event("ENERGY CRISIS") 
-
-    # MOMENT 3: Run this to lock final prices
-    # oracle.resolve_final_market() 
-
-    # MOMENT 4: Run this to see who won the pitch
+    # oracle.calculate_sentiment_prices()
+    
+    oracle.apply_random_event("A massive solar storm has knocked out the internet. High-tech \"VR\" and \"Brain-Link\" companies have stopped working. Only \"Traditional/Physical\" companies are making money") 
+    
+    # oracle.resolve_final_market()
+    
     # oracle.get_final_winner()
-    
-    

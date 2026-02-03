@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
-import { Mic2, Trophy, Lock, UserCheck, Flame } from 'lucide-react';
+import { Mic2, Trophy, Lock, UserCheck, Flame, Zap } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export const Phase4 = ({ team }: { team: any }) => {
@@ -41,6 +41,25 @@ export const Phase4 = ({ team }: { team: any }) => {
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'game_state' }, (p) => {
         setIsVotingOpen(p.new.is_voting_open);
       })
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'market_news' }, (payload) => {
+        toast.custom((t) => (
+          <div className={`${t.visible ? 'animate-enter' : 'animate-leave'} max-w-md w-full bg-zinc-900 border-l-4 border-emerald-500 shadow-2xl p-4 flex items-start gap-3 pointer-events-auto ring-1 ring-black ring-opacity-5`}>
+            <div className="p-2 rounded bg-emerald-500/10">
+              <Zap size={20} className="text-emerald-500" />
+            </div>
+            <div className="flex-1">
+              <p className="text-[10px] text-emerald-500 font-black uppercase tracking-widest mb-1">
+                Incoming_Market_Flash
+              </p>
+              <p className="text-sm font-bold tracking-tight text-white uppercase">
+                {payload.new.message}
+              </p>
+            </div>
+          </div>
+        ), { duration: 6000 }); // Stays for 6 seconds
+        
+      })
+      
       .subscribe();
     return () => { supabase.removeChannel(sub); };
   }, []);
@@ -90,14 +109,14 @@ export const Phase4 = ({ team }: { team: any }) => {
               
               {/* Founder Asset Badge */}
               <div className="absolute px-4 py-1 border rounded-full -top-3 right-8 bg-zinc-900 border-zinc-800">
-                <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">
-                  Representing: <span className="ml-1 text-white">{f.founder_asset}</span>
+                <p className="text-[11px] font-black text-zinc-500 uppercase tracking-widest">
+                  Representing: <span className="ml-1 text-green-700">{f.founder_asset}</span>
                 </p>
               </div>
 
               <div className="mb-8">
-                <p className="text-[10px] text-zinc-600 font-bold uppercase mb-1">Finalist_Unit</p>
-                <h3 className="text-2xl font-black tracking-tighter uppercase transition-colors group-hover:text-emerald-400">
+                <p className="text-[14px] text-zinc-600 font-bold uppercase mb-1">Finalist_Unit</p>
+                <h3 className="text-3xl font-black tracking-tighter uppercase transition-colors group-hover:text-emerald-400">
                     {f.team_name}
                     {f.id === team.id && <span className="ml-2 text-xs text-emerald-500">(YOU)</span>}
                 </h3>
