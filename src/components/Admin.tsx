@@ -51,32 +51,53 @@ export const Admin = ({ onBack }: { onBack: () => void }) => {
 };
 
 const initializePhase4 = async () => {
-    setLoading(true);
-    // 1. Get all teams and calculate Net Worth (Logic from previous step)
-    const { data: teams } = await supabase.from('teams').select('*');
+  setLoading(true);
+  try {
+    // 1. Fetch current data
+    const { data: teams } = await supabase.from('teams').select('*').eq('status', 'active');
     const { data: prices } = await supabase.from('stock_prices').select('*');
     const { data: txs } = await supabase.from('transactions').select('*');
-    const pMap: any = {};
-    prices?.forEach(p => pMap[p.symbol] = Number(p.current_price));
 
-    const rankings = teams!.map(t => {
-        let equity = 0;
-        txs!.filter(tx => tx.team_id === t.id).forEach(tx => {
-            equity += (tx.amount * (pMap[tx.asset_id] || 0));
-        });
-        return { id: t.id, netWorth: Number(t.balance) + equity };
+    if (!teams || !prices || !txs) return;
+
+    // 2. Calculate Net Worth and Sort Teams
+    const pMap: any = {};
+    prices.forEach(p => pMap[p.symbol] = Number(p.current_price));
+
+    const rankedTeams = teams.map(t => {
+      let equity = 0;
+      txs.filter(tx => tx.team_id === t.id).forEach(tx => {
+        equity += (Number(tx.amount) * (pMap[tx.asset_id] || 0));
+      });
+      return { id: t.id, netWorth: Number(t.balance) + equity };
     }).sort((a, b) => b.netWorth - a.netWorth);
 
-    // 2. Mark Top 8 as Finalists
-    const top8Ids = rankings.slice(0, 8).map(r => r.id);
-    await supabase.from('teams').update({ is_finalist: false }).neq('id', 'god'); // Reset
-    await supabase.from('teams').update({ is_finalist: true }).in('id', top8Ids);
-    
-    // 3. Move room to Phase 4
-    await supabase.from('teams').update({ phase: 4 }).neq('status', 'god');
-    
-    alert("PHASE 4 ACTIVE: Top 8 Finalists Selected!");
-    setLoading(false);
+    // 3. Sort ALL 6 Stocks by Price (High to Low)
+    const rankedStocks = [...prices].sort((a, b) => Number(b.current_price) - Number(a.current_price));
+
+    // 4. Select Top 6 Teams
+    const top6 = rankedTeams.slice(0, 6);
+
+    // 5. Reset previous finalists and then Map One-to-One
+    await supabase.from('teams').update({ is_finalist: false, assigned_pitch_asset: null }).neq('status', 'god');
+
+    for (let i = 0; i < top6.length; i++) {
+      await supabase.from('teams').update({ 
+        is_finalist: true, 
+        assigned_pitch_asset: rankedStocks[i].symbol, // Mapping highest team to highest stock
+        phase: 4 
+      }).eq('id', top6[i].id);
+    }
+
+    // 6. Move non-finalists to Phase 4 to watch
+    await supabase.from('teams').update({ phase: 4 }).eq('is_finalist', false).neq('status', 'god');
+
+    alert("ELECTION INITIALIZED: Top 6 Teams mapped to Top 6 Assets.");
+    refreshData();
+  } catch (err) {
+    alert("Error: " + err);
+  }
+  setLoading(false);
 };
 
 const toggleVoting = async (open: boolean) => {
@@ -461,6 +482,18 @@ const setGlobalPhase = async (p: number) => {
               <button onClick={() => setGlobalPhase(1)} className="border border-zinc-800 p-3 text-[12px] hover:bg-zinc-900 text-left flex justify-between uppercase">Phase 1: Trade <span>{teams[0]?.phase === 1 && '●'}</span></button>
               <button onClick={() => setGlobalPhase(11)} className="border border-zinc-800 p-3 text-[12px] hover:bg-zinc-900 text-left flex justify-between uppercase">Phase 1.5: Results <span>{teams[0]?.phase === 11 && '●'}</span></button>
               <button onClick={() => setGlobalPhase(2)} className="border border-zinc-800 p-3 text-[12px] hover:bg-zinc-900 text-left flex justify-between uppercase">Phase 2: Opinion Market <span>{teams[0]?.phase === 2 && '●'}</span></button>
+              <button 
+  onClick={() => setGlobalPhase(200)} 
+  className="w-full bg-indigo-600 text-white py-3 font-black text-[10px] uppercase mt-2 shadow-[0_0_15px_rgba(99,102,241,0.4)]"
+>
+  Project Market Analytics
+</button>
+              <button 
+  onClick={() => setGlobalPhase(33)} 
+  className="w-full bg-red-600 text-white py-3 font-black text-[10px] uppercase mt-2 shadow-[0_0_15px_rgba(220,38,38,0.4)]"
+>
+  Open Live Trading War
+</button>
               <button onClick={finalizeWinners} className="w-full bg-yellow-500 text-black py-4 font-black uppercase text-xs mt-4 shadow-[0_0_20px_rgba(234,179,8,0.3)]">
     Finalize Tally & Reveal Winners
 </button>
@@ -555,6 +588,15 @@ const setGlobalPhase = async (p: number) => {
   <p className="text-[9px] text-zinc-600 text-center uppercase italic">
     Changing this will flip every student's screen instantly.
   </p>
+</section>
+<section className="p-6 mt-6 border shadow-xl bg-zinc-950 border-yellow-900/30 rounded-xl">
+    <h2 className="text-[10px] font-black text-yellow-500 mb-4 uppercase tracking-[0.2em]">Listing_Authority</h2>
+    <button 
+        onClick={() => setGlobalPhase(31)} 
+        className="w-full py-3 text-[10px] font-black text-black uppercase bg-yellow-500 hover:bg-yellow-400 transition-all shadow-[0_0_20px_rgba(234,179,8,0.2)]"
+    >
+        Broadcast IPO Alert
+    </button>
 </section>
 <section className="p-6 mt-6 border shadow-xl bg-zinc-950 border-rose-900/30 rounded-xl">
     <h2 className="text-[10px] font-black text-rose-500 mb-6 uppercase tracking-[0.2em] flex items-center gap-2">

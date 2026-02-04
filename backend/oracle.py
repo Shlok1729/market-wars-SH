@@ -186,8 +186,8 @@ if __name__ == "__main__":
     
     #oracle.calculate_sentiment_prices()
     
-    oracle.apply_random_event("Startup incubator gets massive funding by college thus getting a expansion opportunity.") 
+    #oracle.apply_random_event("Startup incubator gets massive funding by college thus getting a expansion opportunity.") 
     
     # oracle.resolve_final_market()
     
-    # oracle.get_final_winner()
+    oracle.get_final_winner()

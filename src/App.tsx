@@ -12,6 +12,9 @@ import { PortfolioModal } from './components/PortfolioModal'
 import { Phase3 } from './components/Phase3'
 import { Phase4 } from './components/Phase4'
 import { WinnersCircle } from './components/WinnersCircle'
+import { Phase3Dynamic } from './components/Phase3Dynamic'
+import { IPOAlert } from './components/IpoAlert'
+import { MarketAnalytics } from './components/MarketAnalytics'
 
 function App() {
   const [showPortfolio, setShowPortfolio] = useState(false);
@@ -183,6 +186,10 @@ function App() {
         {team.phase === 3 && <Phase3 />} {/* Add this line */}
         {team.phase === 4 && <Phase4 team={team} />} {/* Add this */}
         {team.phase === 5 && <WinnersCircle />} {/* ADD THIS */}
+        {team.phase === 33 && <Phase3Dynamic team={team} setTeam={setTeam} />}
+        {team.phase === 31 && <IPOAlert />} 
+        {team.phase === 200 && <MarketAnalytics />}
+        
       </div>
     </div>
   );
