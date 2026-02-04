@@ -13,7 +13,7 @@ import { Phase3 } from './components/Phase3'
 import { Phase4 } from './components/Phase4'
 import { WinnersCircle } from './components/WinnersCircle'
 import { Phase3Dynamic } from './components/Phase3Dynamic'
-import { IPOAlert } from './components/IpoAlert'
+import { IPOAlert } from './components/IPOAlert'
 import { MarketAnalytics } from './components/MarketAnalytics'
 
 function App() {
