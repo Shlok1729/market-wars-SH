@@ -114,7 +114,7 @@ const startPhase3 = async () => {
 };
 
 const updateEventIndex = async (newIdx: number) => {
-    if (newIdx < 0 || newIdx > 4) return;
+    if (newIdx < 0 || newIdx > 8) return;
     const { error } = await supabase
         .from('game_state')
         .update({ current_event_index: newIdx })
@@ -126,7 +126,7 @@ const updateEventIndex = async (newIdx: number) => {
   const [eventIdx, setEventIdx] = useState(0);
 
 const triggerNextEvent = async (newIdx: number) => {
-  if (newIdx < 0 || newIdx > 4) return;
+  if (newIdx < 0 || newIdx > 8) return;
   const { error } = await supabase
     .from('game_state')
     .update({ current_event_index: newIdx })
@@ -296,7 +296,7 @@ const changeQuestion = async (newIndex: number) => {
       .from('teams')
       .select('founder_asset');
 
-    const assetOptions = ['lib', 'piz', 'gym', 'inc'];
+    const assetOptions = ['sft', 'atl', 'ecs', 'hog'];
     let founderAsset = '';
 
     if (!existingTeams || existingTeams.length === 0) {
@@ -304,7 +304,7 @@ const changeQuestion = async (newIndex: number) => {
       founderAsset = assetOptions[Math.floor(Math.random() * 4)];
     } else {
       // Count occurrences of each asset
-      const counts: any = { lib: 0, piz: 0, gym: 0, inc: 0 };
+      const counts: any = { sft: 0, atl: 0, ecs: 0, hog: 0 };
       existingTeams.forEach(t => {
         if (t.founder_asset) counts[t.founder_asset]++;
       });
@@ -367,7 +367,7 @@ const changeQuestion = async (newIndex: number) => {
     setLoading(true);
 
     const totalPot = 10000;
-    const assets = ['lib', 'piz', 'gym', 'inc'];
+    const assets = ['sft', 'atl', 'ecs', 'hog'];
 
     for (const assetId of assets) {
         const { data: txs } = await supabase.from('transactions').select('team_id, amount').eq('asset_id', assetId).eq('type', 'buy_equity');
@@ -621,7 +621,7 @@ const setGlobalPhase = async (p: number) => {
             </button>
             <div className="text-center">
                 <p className="text-[9px] text-zinc-600 uppercase font-bold">Current_Event</p>
-                <p className="text-xl font-black text-white">{currentEvent} / 4</p>
+                <p className="text-xl font-black text-white">{currentEvent} / 8</p>
             </div>
             <button onClick={() => updateEventIndex(currentEvent + 1)} className="hover:text-rose-500">
                 <ChevronRight size={20} />

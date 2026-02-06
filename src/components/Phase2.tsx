@@ -5,47 +5,47 @@ import { toast } from 'react-hot-toast';
 
 const QUESTIONS = [
   { 
-    id: 'lib', 
-    company: 'The Safe Haven (CAMPUS LIBRARY)', 
-    q: "A Global Tech Giant offers a multi-billion ₹ grant to digitize every book, but they demand exclusive ownership of student search data and reading habits. Decision?", 
+    id: 'sft', 
+    company: 'Making Space a Destination (SKYFORGE TECH)', 
+    q: "A reusable launch vehicle recently completed a successful test mission, reducing future launch costs. What is the most likely short-term market reaction?", 
     options: [
-      "DATA MONETIZATION: Accept the grant. Privacy is a small price for infinite funding and 100x digital speed.", 
-      "NEURAL INTERFACE: Use the funds to build a direct brain-to-library link, making physical study obsolete.", 
-      "PREMIUM PRIVACY: Reject the grant. Charge ₹500/hr for access to maintain 'Elite Privacy' and physical archives.", 
-      "TRADITIONALIST: Stay as a quiet archive. Avoid tech. Rely purely on student late fees and donations to survive."
+      "Lower interest because space missions become less exclusive", 
+      "Higher investor confidence due to improved cost efficiency", 
+      "No major impact since space projects take many years", 
+      "Reduced demand for satellites as space becomes more congested"
     ] 
   },
   { 
-    id: 'piz', 
-    company: 'Steady Performer (LOCAL PIZZA SHOP)', 
-    q: "A 'Black Swan' event: A lab-grown synthetic meat scandal hits the news. Your shop is the only one using 100% natural ingredients. How do you capitalize?", 
+    id: 'hog', 
+    company: 'Precision That Commands the Battlefield (ATLAS TECH)', 
+    q: "New trade rules and compliance requirements have made cross-border business more complex.How does this situation most likely affect a global trade advisory firm?", 
     options: [
-      "MONOPOLY PRICING: Increase prices by 500%. Transition from a 'Pizza Shop' to a 'Luxury Health' brand.", 
-      "VERTICAL INTEGRATION: Buy the local cow farms. Control the entire supply chain to prevent corporate sabotage.", 
-      "FRANCHISE BLITZ: Sell thousands of low-cost franchises immediately while the 'Natural' trend is at its peak.", 
-      "COMMUNITY HERO: Keep prices low and give away free slices to students to gain 'Social Capital' for future favor."
+      "Reduced demand due to higher trade barriers", 
+      "Increased demand for compliance and market-entry support", 
+      "Complete halt in international trade activity", 
+      "Shift of businesses to informal trade channels"
     ] 
   },
   { 
-    id: 'gym', 
-    company: 'Growth Asset (CAMPUS GYM)', 
-    q: "The Gym discovers that its new 'Smart Mirrors' can predict a user's future chronic illnesses with 99% accuracy. An insurance conglomerate wants to buy this 'Prediction Engine'.", 
+    id: 'ecs', 
+    company: 'Where Networks Meet Tomorrow (EDGECELL NETWORKS)', 
+    q: "Governments announced stricter security reviews for telecom network equipment. How could this affect a major telecom infrastructure provider?", 
     options: [
-      "BIO-HACKING LAB: Don't sell. Charge students massive fees for 'Life-Extension' protocols based on their data.", 
-      "INSURANCE PARTNER: Sell the data. The Gym becomes a passive data-mining stream for global shareholders.", 
-      "FITNESS METAVERSE: Shut the physical gym. Move to haptic-suit workouts in a digital world only.", 
-      "THE UNDERGROUND: Delete the data to protect students. Pivot to a high-intensity, 'No-Tech' fight club model."
+      "Loss of all existing contracts",   
+      "Increased costs but higher long-term trust in approved suppliers", 
+      "Immediate shutdown of network operations.", 
+      "No impact on telecom companies"
     ] 
   },
   { 
-    id: 'inc', 
-    company: 'Volatile Wildcard (STARTUP INCUBATOR)', 
-    q: "A student startup in the incubator has invented a 'Battery that lasts 50 years.' It will destroy the global energy industry. Major oil companies are threatening a buyout or a shutdown.", 
+    id: 'atl', 
+    company: 'Connecting Markets. Creating Momentum (HORIZON GLOBAL)', 
+    q: "Defense budgets are being increased following rising regional security concerns. What is the most realistic outcome for a defense manufacturer?", 
     options: [
-      "DEFENSE CONTRACT: Move the startup into military classified research for immediate government protection.", 
-      "OPEN SOURCE: Release the blueprints for free. The stock might crash now, but the brand becomes immortal.", 
-      "IP WARFARE: Sue every energy company in the world. Spend all cash on the highest-paid aggressive lawyers.", 
-      "THE EXIT: Sell the patent to an oil company for them to bury it forever. Take the massive payout and run."
+      "Instant revenue growth within days", 
+      "Gradual increase in orders through long-term contracts", 
+      "Reduced government spending on weapons", 
+      "No effect because defense markets are fixed"
     ] 
   }
 ];

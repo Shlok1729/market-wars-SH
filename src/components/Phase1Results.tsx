@@ -45,7 +45,7 @@ export const Phase1Results = ({ team }: { team: any }) => {
   }, [team.id]);
 
   return (
-    <div className="min-h-screen bg-[#050505] text-zinc-300 font-mono p-4 md:p-10">
+    <div className="min-h-screen bg-[#050505] text-zinc-300 font-mono p-3 sm:p-4 md:p-8 pb-24 w-full overflow-x-hidden">
       <div className="max-w-4xl mx-auto space-y-10">
         
         {/* TOP HEADER */}
@@ -68,16 +68,17 @@ export const Phase1Results = ({ team }: { team: any }) => {
         </div>
 
         {/* THE LEADERBOARD */}
-        <div className="bg-zinc-950 border border-zinc-800 rounded-[32px] overflow-hidden shadow-2xl">
+        <div className="bg-zinc-950 border border-zinc-800 rounded-[32px] overflow-x-auto md:overflow-x-hidden shadow-2xl">
+
             <table className="w-full text-left">
                 <thead className="bg-zinc-900/50 border-b border-zinc-800 text-[10px] text-zinc-500 font-black">
                     <tr>
                         <th className="p-6">RANK</th>
                         <th className="p-6">UNIT_IDENTIFIER</th>
-                        <th className="p-6 -ml-10 ">TOTAL_NET_WORTH</th>
+                        <th className="p-4 sm:p-6 md:-ml-10">TOTAL_NET_WORTH</th>
                     </tr>
                 </thead>
-                <tbody className="divide-y divide-zinc-900">
+                <tbody className="overflow-x-scroll divide-y divide-zinc-900">
                     {leaderboard.map((t, idx) => (
                         <tr key={idx} className={`${t.name === team.team_name ? 'bg-emerald-500/5' : ''} group transition-colors`}>
                             <td className="p-6 font-black text-zinc-500">
@@ -90,7 +91,7 @@ export const Phase1Results = ({ team }: { team: any }) => {
                                     <span>Equity: ₹{t.equity.toFixed(0)}</span>
                                 </div>
                             </td>
-                            <td className="p-4 pr-10 text-center">
+                            <td className="p-4 pr-4 text-center sm:pr-10">
                                 <p className="text-2xl font-black tracking-tighter text-white">
                                     ₹{t.netWorth.toLocaleString(undefined, {maximumFractionDigits: 0})}
                                 </p>

@@ -13,44 +13,44 @@ supabase: Client = create_client(os.getenv("VITE_SUPABASE_URL"), os.getenv("SUPA
 
 # We mirror the questions from the frontend here so Python knows the context
 MARKET_CONTEXT = {
-    "lib": {
-        "name": "The Safe Haven (CAMPUS LIBRARY)",
-        "problem": "A Global Tech Giant offers a multi-billion ₹ grant to digitize every book, but they demand exclusive ownership of student search data and reading habits. Decision?",
+    "sft": {
+        "name": "Making Space a Destination (SKYFORGE TECH)",
+        "problem": "A reusable launch vehicle recently completed a successful test mission, reducing future launch costs. What is the most likely short-term market reaction?",
         "options": [
-            "DATA MONETIZATION: Accept the grant. Privacy is a small price for infinite funding and 100x digital speed.", 
-            "NEURAL INTERFACE: Use the funds to build a direct brain-to-library link, making physical study obsolete.", 
-            "PREMIUM PRIVACY: Reject the grant. Charge ₹500/hr for access to maintain 'Elite Privacy' and physical archives.", 
-            "TRADITIONALIST: Stay as a quiet archive. Avoid tech. Rely purely on student late fees and donations to survive."
+            "Lower interest because space missions become less exclusive", 
+      "Higher investor confidence due to improved cost efficiency", 
+      "No major impact since space projects take many years", 
+      "Reduced demand for satellites as space becomes more congested"
         ]
     },
-    "piz": {
-        "name": "Steady Performer (LOCAL PIZZA SHOP)",
-        "problem": "A 'Black Swan' event: A lab-grown synthetic meat scandal hits the news. Your shop is the only one using 100% natural ingredients. How do you capitalize?",
+    "hog": {
+        "name": "Precision That Commands the Battlefield (ATLAS TECH)",
+        "problem": "New trade rules and compliance requirements have made cross-border business more complex.How does this situation most likely affect a global trade advisory firm?",
         "options": [
-            "MONOPOLY PRICING: Increase prices by 500%. Transition from a 'Pizza Shop' to a 'Luxury Health' brand.", 
-            "VERTICAL INTEGRATION: Buy the local cow farms. Control the entire supply chain to prevent corporate sabotage.", 
-            "FRANCHISE BLITZ: Sell thousands of low-cost franchises immediately while the 'Natural' trend is at its peak.", 
-            "COMMUNITY HERO: Keep prices low and give away free slices to students to gain 'Social Capital' for future favor."
+            "Reduced demand due to higher trade barriers", 
+      "Increased demand for compliance and market-entry support", 
+      "Complete halt in international trade activity", 
+      "Shift of businesses to informal trade channels"
         ]
     },
-    "gym": {
-        "name": "Growth Asset (CAMPUS GYM)",
-        "problem": "The Gym discovers that its new 'Smart Mirrors' can predict a user's future chronic illnesses with 99% accuracy. An insurance conglomerate wants to buy this 'Prediction Engine'.",
+    "ecs": {
+        "name": "Where Networks Meet Tomorrow (EDGECELL NETWORKS)",
+        "problem": "Governments announced stricter security reviews for telecom network equipment. How could this affect a major telecom infrastructure provider?",
         "options": [
-            "BIO-HACKING LAB: Don't sell. Charge students massive fees for 'Life-Extension' protocols based on their data.", 
-            "INSURANCE PARTNER: Sell the data. The Gym becomes a passive data-mining stream for global shareholders.", 
-            "FITNESS METAVERSE: Shut the physical gym. Move to haptic-suit workouts in a digital world only.", 
-            "THE UNDERGROUND: Delete the data to protect students. Pivot to a high-intensity, 'No-Tech' fight club model."
+            "Loss of all existing contracts",   
+      "Increased costs but higher long-term trust in approved suppliers", 
+      "Immediate shutdown of network operations.", 
+      "No impact on telecom companies"
         ]
     },
-    "inc": {
-        "name": "Volatile Wildcard (STARTUP INCUBATOR)",
-        "problem": "A student startup in the incubator has invented a 'Battery that lasts 50 years.' It will destroy the global energy industry. Major oil companies are threatening a buyout or a shutdown.",
+    "atl": {
+        "name": "Connecting Markets. Creating Momentum (HORIZON GLOBAL)",
+        "problem": "Defense budgets are being increased following rising regional security concerns. What is the most realistic outcome for a defense manufacturer?",
         "options": [
-            "DEFENSE CONTRACT: Move the startup into military classified research for immediate government protection.", 
-            "OPEN SOURCE: Release the blueprints for free. The stock might crash now, but the brand becomes immortal.", 
-            "IP WARFARE: Sue every energy company in the world. Spend all cash on the highest-paid aggressive lawyers.", 
-            "THE EXIT: Sell the patent to an oil company for them to bury it forever. Take the massive payout and run."
+            "Instant revenue growth within days", 
+      "Gradual increase in orders through long-term contracts", 
+      "Reduced government spending on weapons", 
+      "No effect because defense markets are fixed"
         ]
     }
 }
@@ -98,12 +98,52 @@ class MarketOracle:
                 report[symbol]["Votes"][opt] = count
 
         prompt = f"""
-        Act as a Stock Market Algorithm.
-        DATA REPORT: {json.dumps(report, indent=2)}
-        TASK: Determine new stock prices (₹2.00 to ₹150.00). Baseline is ₹10.00.
-        Rule: If >70% teams chose same option, the price should stay flat or drop (₹5-12).
-        RETURN ONLY A JSON OBJECT: {{"lib": x, "piz": x, "gym": x, "inc": x}}
-        """
+You are an autonomous stock market pricing algorithm.
+
+You are given collective market sentiment data for multiple stocks.
+Each stock has a crisis scenario and multiple answer options.
+Teams voted by selecting one option per stock.
+
+DATA (Votes per option):
+{json.dumps(report, indent=2)}
+
+PRICING RULES:
+- Base price for all stocks is ₹10.00
+- Final price must be between ₹2.00 and ₹150.00
+- Prices should reflect **market psychology**, not correctness
+
+INTERPRETATION LOGIC:
+1. If MORE THAN 70% of teams select the SAME option:
+   - Treat this as herd behavior or overconfidence
+   - Price should stay flat or decline
+   - Target range: ₹5.00 – ₹12.00
+
+2. If votes are DISTRIBUTED but one option has 40–60% support:
+   - Indicates informed but not crowded conviction
+   - Price should rise moderately
+   - Target range: ₹15.00 – ₹35.00
+
+3. If votes are HIGHLY FRAGMENTED (no option above 35%):
+   - Indicates uncertainty and confusion
+   - Price should be volatile or slightly negative
+   - Target range: ₹6.00 – ₹14.00
+
+4. If a MINORITY OPTION (15–30%) represents rational long-term thinking:
+   - Price can rise sharply despite low consensus
+   - Target range: ₹40.00 – ₹90.00
+
+5. Extremely bullish outcomes (₹90+):
+   - Only if sentiment suggests asymmetric upside with low crowding
+
+OUTPUT REQUIREMENTS:
+- Return ONLY a valid JSON object : {{"sft": x, "hog": x, "ecs": x, "atl": x}}
+
+
+
+
+Now calculate the new prices.
+"""
+
 
         try:
             response = client.models.generate_content(model=self.model_id, contents=prompt)
@@ -121,7 +161,7 @@ class MarketOracle:
         Current Prices: {json.dumps(current)}
         Event: {event_text}
         Task: Recalculate prices (₹1.00 to ₹300.00) based on logic.
-        RETURN ONLY JSON: {{"lib": x, "piz": x, "gym": x, "inc": x}}
+        RETURN ONLY JSON: {{"sft": x, "hog": x, "ecs": x, "atl": x}}
         """
         
         try:
@@ -144,7 +184,7 @@ class MarketOracle:
         FINAL EVENTS: {json.dumps(events)}
         STUDENT CHOICES: {json.dumps(responses[:30])}
         TASK: Recalculate FINAL prices (₹0.10 to ₹500.00).
-        RETURN ONLY JSON: {{"lib": x, "piz": x, "gym": x, "inc": x}}
+        RETURN ONLY JSON: {{"sft": x, "hog": x, "ecs": x, "atl": x}}
         """
 
         try:
@@ -184,10 +224,10 @@ if __name__ == "__main__":
     
     # UNCOMMENT THE ONE YOU WANT TO RUN:
     
-    #oracle.calculate_sentiment_prices()
+    oracle.calculate_sentiment_prices()
     
     #oracle.apply_random_event("Startup incubator gets massive funding by college thus getting a expansion opportunity.") 
     
     # oracle.resolve_final_market()
     
-    oracle.get_final_winner()
+    # oracle.get_final_winner()

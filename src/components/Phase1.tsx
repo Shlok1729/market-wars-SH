@@ -3,7 +3,10 @@ import { supabase } from '../lib/supabaseClient';
 import toast from 'react-hot-toast';
 import { 
   TrendingUp, TrendingDown, Library, Pizza, Dumbbell, 
-  Rocket, Wallet, Award, Plus, Minus, Zap 
+  Rocket, Wallet, Award, Plus, Minus, Zap, 
+  BrickWallShield,
+  MonitorCloud,
+  HandCoins
 } from 'lucide-react';
 
 interface Phase1Props {
@@ -15,32 +18,32 @@ export const Phase1: React.FC<Phase1Props> = ({ team, setTeam }) => {
   const [loading, setLoading] = useState<string | null>(null);
   const [news, setNews] = useState<string[]>([]);
   const [holdings, setHoldings] = useState<{ [key: string]: number }>({
-    lib: 0, piz: 0, gym: 0, inc: 0
+    sft: 0, atl: 0, ecs: 0, hog: 0
   });
   const [prices, setPrices] = useState<{ [key: string]: number }>({
-    lib: 10, piz: 10, gym: 10, inc: 10
+    sft: 10, atl: 10, ecs: 10, hog: 10
   });
   const [marketVolume, setMarketVolume] = useState<{ [key: string]: number }>({
-    lib: 0, piz: 0, gym: 0, inc: 0
+    sft: 0, atl: 0, ecs: 0, hog: 0
   });
   
   // Track inputs for each card separately
   const [tradeQtys, setTradeQtys] = useState<{ [key: string]: number }>({
-    lib: 10, piz: 10, gym: 10, inc: 10
+    sft: 10, atl: 10, ecs: 10, hog: 10
   });
 
   const assets = [
-    { id: 'lib', name: 'CAMPUS LIBRARY', desc: 'The Safe Haven', icon: <Library size={20}/>, color: 'text-blue-400', border: 'border-blue-500/20' },
-    { id: 'piz', name: 'LOCAL PIZZA SHOP', desc: 'Steady Performer', icon: <Pizza size={20}/>, color: 'text-orange-400', border: 'border-orange-500/20' },
-    { id: 'gym', name: 'CAMPUS GYM', desc: 'Growth Asset', icon: <Dumbbell size={20}/>, color: 'text-emerald-400', border: 'border-emerald-500/20' },
-    { id: 'inc', name: 'STARTUP INCUBATOR', desc: 'Volatile Wildcard', icon: <Rocket size={20}/>, color: 'text-purple-400', border: 'border-purple-500/20' },
+    { id: 'sft', name: 'SkyForge Tech.', desc: 'Making Space a Destination', icon: <Rocket size={20}/>, color: 'text-blue-400', border: 'border-blue-500/20' },
+    { id: 'atl', name: 'Atlas Tech.', desc: 'Precision That Commands the Battlefield', icon: <BrickWallShield size={20}/>, color: 'text-orange-400', border: 'border-orange-500/20' },
+    { id: 'ecs', name: 'EdgeCell Networks', desc: 'Where Networks Meet Tomorrow', icon: <MonitorCloud size={20}/>, color: 'text-emerald-400', border: 'border-emerald-500/20' },
+    { id: 'hog', name: 'Horizon GLobal', desc: 'Connecting Markets. Creating Momentum', icon: <HandCoins size={20}/>, color: 'text-purple-400', border: 'border-purple-500/20' },
   ];
 
   useEffect(() => {
     const loadMarketData = async () => {
       const { data: myTx } = await supabase.from('transactions').select('asset_id, amount').eq('team_id', team.id);
       if (myTx) {
-        const h: any = { lib: 0, piz: 0, gym: 0, inc: 0 };
+        const h: any = { sft: 0, atl: 0, ecs: 0, hog: 0 };
         myTx.forEach(t => h[t.asset_id] += t.amount);
         setHoldings(h);
       }
@@ -52,7 +55,7 @@ export const Phase1: React.FC<Phase1Props> = ({ team, setTeam }) => {
       }
       const { data: allTx } = await supabase.from('transactions').select('asset_id, amount');
       if (allTx) {
-        const v: any = { lib: 0, piz: 0, gym: 0, inc: 0 };
+        const v: any = { sft: 0, atl: 0, ecs: 0, hog: 0 };
         allTx.forEach(t => v[t.asset_id] += t.amount);
         setMarketVolume(v);
       }

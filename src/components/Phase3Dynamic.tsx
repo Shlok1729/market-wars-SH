@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import toast from 'react-hot-toast';
-import { TrendingUp, TrendingDown, Wallet, Activity, Plus, Minus, Zap } from 'lucide-react';
+import { TrendingUp, TrendingDown, Wallet, Activity, Plus, Minus, Zap, RefreshCw } from 'lucide-react';
 
 export const Phase3Dynamic = ({ team, setTeam }: { team: any, setTeam: any }) => {
   const [prices, setPrices] = useState<any>({});
-  const [holdings, setHoldings] = useState<any>({ lib: 0, piz: 0, gym: 0, inc: 0, qnt: 0, slr: 0 });
-  const [tradeQtys, setTradeQtys] = useState<any>({ lib: 10, piz: 10, gym: 10, inc: 10, qnt: 10, slr: 10 });
+  const [holdings, setHoldings] = useState<any>({ sft: 0, atl: 0, ecs: 0, hog: 0, leo: 0, agt: 0 });
+  const [tradeQtys, setTradeQtys] = useState<any>({ sft: 10, atl: 10, ecs: 10, hog: 10, leo: 10, agt: 10 });
   const [loading, setLoading] = useState<string | null>(null);
 
   useEffect(() => {
@@ -19,7 +19,7 @@ export const Phase3Dynamic = ({ team, setTeam }: { team: any, setTeam: any }) =>
 
       // 2. Fetch Personal Holdings
       const { data: txs } = await supabase.from('transactions').select('asset_id, amount').eq('team_id', team.id);
-      const h: any = { lib: 0, piz: 0, gym: 0, inc: 0 , qnt: 0, slr: 0 };
+      const h: any = { sft: 0, atl: 0, ecs: 0, hog: 0, leo: 0, agt: 0 };
       txs?.forEach(t => { if(h[t.asset_id] !== undefined) h[t.asset_id] += t.amount; });
       setHoldings(h);
     };
@@ -71,27 +71,31 @@ export const Phase3Dynamic = ({ team, setTeam }: { team: any, setTeam: any }) =>
   };
 
   return (
-    <div className="min-h-screen p-4 pb-20 font-mono text-white bg-black md:p-8">
+    <div className="w-full min-h-screen p-3 pb-24 overflow-x-hidden font-mono text-white bg-black sm:p-4 md:p-8">
+
+
       {/* HEADER */}
-      <div className="flex items-center justify-between max-w-6xl pb-6 mx-auto mb-10 border-b border-zinc-800">
+      <div className="flex items-center justify-between w-full max-w-6xl pb-6 mx-auto mb-10 overflow-hidden border-b border-zinc-800">
         <div>
-          <h1 className="flex items-center gap-2 text-2xl font-black">
+          <h1 className="flex items-center gap-2 text-2xl font-black text-wrap">
             <span className="bg-red-600 px-2 py-0.5 text-xs animate-pulse">WAR_ZONE</span>
             OPEN_MARKET_TRADING
           </h1>
           <p className="text-[10px] text-zinc-500 uppercase tracking-widest mt-1">Real-time Supply/Demand Pricing Enabled</p>
         </div>
+        <div className="fixed z-50 top-4 right-4">
         <div className="p-4 border bg-zinc-900 border-zinc-800 rounded-xl">
            <p className="text-[9px] text-zinc-500 uppercase">Available_Purse</p>
            <p className="text-xl font-bold text-emerald-400">₹{Number(team.balance).toLocaleString()}</p>
         </div>
+        </div>
       </div>
 
       <div className="grid max-w-6xl grid-cols-1 gap-6 mx-auto md:grid-cols-2">
-        {['lib', 'piz', 'gym', 'inc', 'qnt', 'slr'].map(id => (
+        {['sft', 'atl', 'ecs', 'hog', 'leo', 'agt'].map(id => (
           <div key={id} className="p-6 transition-all border bg-zinc-950 border-zinc-900 rounded-2xl hover:border-zinc-700">
             <div className="flex items-start justify-between mb-6">
-               <span className="text-xs font-bold tracking-tighter uppercase text-zinc-400">{id === 'lib' ? 'Library' : id === 'piz' ? 'Pizza' : id === 'gym' ? 'Gym' : id === 'slr' ? 'Solar' : id === 'qnt' ? 'Quantum' : 'Incubator'}</span>
+               <span className="text-xs font-bold tracking-tighter uppercase text-zinc-400">{id === 'sft' ? 'SkyForge Tech' : id === 'atl' ? 'Atlas Tech' : id === 'ecs' ? 'EdgeCell Networks' : id === 'hog' ? 'Horizon Global' : id === 'leo' ? 'Leo Enterprises' : id === 'agt' ? 'AgriTrade':'company'}</span>
                <div className="text-right">
                   <p className="text-[9px] text-zinc-600 uppercase">Current_Rate</p>
                   <p className="text-3xl font-black text-white">₹{prices[id]?.toFixed(2)}</p>
@@ -111,12 +115,34 @@ export const Phase3Dynamic = ({ team, setTeam }: { team: any, setTeam: any }) =>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <button disabled={!!loading} onClick={() => handleTrade(id, 'buy')} className="flex items-center justify-center gap-2 py-4 text-xs font-black uppercase transition-all bg-emerald-600 hover:bg-emerald-500 rounded-xl active:scale-95">
-                 <TrendingUp size={16}/> Market_Buy
-              </button>
-              <button disabled={!!loading} onClick={() => handleTrade(id, 'sell')} className="flex items-center justify-center gap-2 py-4 text-xs font-black uppercase transition-all border border-rose-600/30 text-rose-500 hover:bg-rose-600 hover:text-white rounded-xl active:scale-95">
-                 <TrendingDown size={16}/> Market_Sell
-              </button>
+               <button 
+    disabled={loading === id} // Only disable the specific asset being traded
+    onClick={() => handleTrade(id, 'buy')} 
+    className="flex items-center justify-center gap-2 py-4 text-xs font-black uppercase transition-all bg-emerald-600 hover:bg-emerald-500 rounded-xl active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+  >
+    {loading === id ? (
+      <RefreshCw size={16} className="animate-spin" /> 
+    ) : (
+      <>
+        <TrendingUp size={16}/> Market_Buy
+      </>
+    )}
+  </button>
+
+  {/* SELL BUTTON */}
+  <button 
+    disabled={loading === id} // Only disable the specific asset being traded
+    onClick={() => handleTrade(id, 'sell')} 
+    className="flex items-center justify-center gap-2 py-4 text-xs font-black uppercase transition-all border border-rose-600/30 text-rose-500 hover:bg-rose-600 hover:text-white rounded-xl active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+  >
+    {loading === id ? (
+      <RefreshCw size={16} className="animate-spin" />
+    ) : (
+      <>
+        <TrendingDown size={16}/> Market_Sell
+      </>
+    )}
+  </button>
             </div>
           </div>
         ))}

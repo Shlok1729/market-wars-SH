@@ -76,7 +76,7 @@ const fetchData = async () => {
       .order('created_at', { ascending: true });
 
     if (logs && logs.length > 0) {
-      const newHistory: any = { lib: [10], piz: [10], gym: [10], inc: [10] };
+      const newHistory: any = { sft: [10], hog: [10], ecs: [10], atl: [10] };
       
       logs.forEach(log => {
         if (newHistory[log.asset_id]) {
@@ -168,51 +168,7 @@ const fetchData = async () => {
     </div>
 
     {/* 2. LIVE GRAPH GRID */}
-    <div className="grid w-full max-w-5xl grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-4 md:gap-4">
-      {['lib', 'piz', 'gym', 'inc'].map((id) => {
-        const prices = history[id]
-        const current = prices[prices.length - 1]
-        const previous = prices[prices.length - 2] || current
-        const isUp = current >= previous
-
-        return (
-          <div
-            key={id}
-            className="flex flex-col justify-between p-3 border sm:p-4 bg-zinc-900/30 border-zinc-800 rounded-xl sm:rounded-2xl"
-          >
-            <div className="flex items-start justify-between mb-2">
-              <p className="text-[9px] sm:text-[10px] text-zinc-500 font-bold uppercase">
-                {id}
-              </p>
-
-              <div
-                className={`flex items-center gap-1 text-[9px] sm:text-[10px] font-black ${
-                  isUp ? 'text-emerald-500' : 'text-rose-500'
-                }`}
-              >
-                {isUp ? <TrendingUp size={10} /> : <TrendingDown size={10} />}
-                {current > 0
-                  ? (((current - previous) / previous) * 100).toFixed(1)
-                  : 0}
-                %
-              </div>
-            </div>
-
-            <p className="mb-3 text-lg font-black sm:mb-4 sm:text-xl md:text-2xl">
-              ₹{current.toFixed(1)}
-            </p>
-
-            {/* GRAPH */}
-            <div className="h-20 mt-auto opacity-80 sm:h-24 md:h-28">
-              <LiveChart
-                data={prices}
-                color={isUp ? '#10b981' : '#f43f5e'}
-              />
-            </div>
-          </div>
-        )
-      })}
-    </div>
+    
   </div>
 )
 

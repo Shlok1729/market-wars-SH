@@ -3,8 +3,8 @@ import { Rocket, Star, ArrowUpRight, ShieldCheck } from 'lucide-react';
 
 export const IPOAlert = () => {
   const ipos = [
-    { name: 'QUANTUM LEAP AI', symbol: 'QNT', price: 100, sector: 'Deep Tech' },
-    { name: 'SOLAR FLARE ENERGY', symbol: 'SLR', price: 65, sector: 'Green Energy' }
+    { name: 'Leo Enterprises', symbol: 'leo', price: 100, sector: 'Built for Operational Excellence' },
+    { name: 'AgriTrade', symbol: 'agt', price: 65, sector: '' }
   ];
 
   return (
