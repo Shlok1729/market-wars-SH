@@ -3,8 +3,8 @@ import { Rocket, Star, ArrowUpRight, ShieldCheck } from 'lucide-react';
 
 export const IPOAlert = () => {
   const ipos = [
-    { name: 'Leo Enterprises', symbol: 'leo', price: 100, sector: 'Built for Operational Excellence' },
-    { name: 'AgriTrade', symbol: 'agt', price: 65, sector: '' }
+    { name: 'Leo Enterprises', symbol: 'leo', price: 50, sector: 'Built for Operational Excellence' },
+    { name: 'AgriTrade', symbol: 'agt', price: 27, sector: '' }
   ];
 
   return (
